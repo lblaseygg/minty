@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minty - NVIDIA Live Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Minty</h1>
+            <div class="live-price">
+                <span id="current-price">$0.00</span>
+                <span id="price-change" class="neutral">(+0.00%)</span>
+            </div>
+        </header>
+
+        <main class="dashboard-grid">
+            <div class="timeframe-selector">
+                <button data-tf="1D">1D</button>
+                <button data-tf="1W">1W</button>
+                <button data-tf="1M">1M</button>
+                <button data-tf="3M">3M</button>
+                <button data-tf="YTD">YTD</button>
+                <button data-tf="1Y" class="active">1Y</button>
+                <button data-tf="ALL">ALL</button>
+            </div>
+
+            <div class="grid-item main-chart">
+                <h3>Price & Volume</h3>
+                <canvas id="price-chart"></canvas>
+            </div>
+
+            <div class="grid-item key-stats">
+                <h3>Key Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat"><span>Open</span><strong id="stat-open">--</strong></div>
+                    <div class="stat"><span>High</span><strong id="stat-high">--</strong></div>
+                    <div class="stat"><span>Low</span><strong id="stat-low">--</strong></div>
+                    <div class="stat"><span>Volume</span><strong id="stat-volume">--</strong></div>
+                </div>
+            </div>
+
+            <div class="grid-item rsi-chart">
+                <h3>Relative Strength Index (RSI)</h3>
+                <canvas id="rsi-chart"></canvas>
+            </div>
+
+            <div class="grid-item macd-chart">
+                <h3>MACD</h3>
+                <canvas id="macd-chart"></canvas>
+            </div>
+
+            <div class="grid-item ai-prediction">
+                <h3>AI Analysis</h3>
+                <div class="recommendation">
+                    <span>Recommendation:</span>
+                    <strong id="recommendation" class="hold">--</strong>
+                </div>
+                <div class="confidence">
+                    <span>Confidence:</span>
+                    <strong id="confidence">--</strong>
+                </div>
+                <div class="trade-buttons">
+                    <button id="buy-btn" class="buy">Buy</button>
+                    <button id="sell-btn" class="sell">Sell</button>
+                </div>
+            </div>
+
+            <div class="grid-item news">
+                <h3>Latest News</h3>
+                <ul id="news-list">
+                    <!-- News items will be dynamically inserted here -->
+                </ul>
+            </div>
+        </main>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html> 
