@@ -1,4 +1,4 @@
-# Minty 🌿
+# <img src="frontend/assets/minty-logo-primary.svg" alt="Minty Logo" width="100" height="100" style="vertical-align: middle; margin-right: 10px;"/> Minty
 
 > Fresh Finance, Smart Investing
 > 
@@ -19,16 +19,17 @@ Minty is a modern, AI-powered platform for stock analysis, trading, and (soon) c
 
 - Visualize key indicators like RSI, MACD, and more, all in one dashboard
 
-### Paper Trading
 
+### Paper Trading `
+`future implementation`
 - Practice buying and selling stocks with simulated trades—no risk, just learning
 
-### User Authentication & Profiles
-
+### User Authentication & Profiles 
+`future implementation`
 - Sign up, log in, and manage your personalized dashboard and trading history
 
 ### Order Management
-
+`future implementation`
 - Place buy/sell orders, view your order history, and track your simulated portfolio
 
 ## 🌱 Roadmap
@@ -73,7 +74,7 @@ Minty is a modern, AI-powered platform for stock analysis, trading, and (soon) c
 
 ### Database
 
-- PostgreSQL (or SQLite for development)
+- PostgreSQL
 
 ### APIs
 
@@ -86,6 +87,19 @@ Minty is a modern, AI-powered platform for stock analysis, trading, and (soon) c
 - scikit-learn
 - pandas
 - NumPy
+
+## Libraries and APIs Used
+
+- **Flask**: Web framework for the backend.
+- **yfinance**: Library for fetching real-time and historical stock data.
+- **pandas**: Data manipulation and analysis.
+- **numpy**: Numerical computing.
+- **scikit-learn**: Machine learning library for model training and evaluation.
+- **XGBoost**: Gradient boosting library for improved prediction accuracy.
+- **ta**: Technical analysis library for computing indicators like RSI and MACD.
+- **BeautifulSoup**: Web scraping library for fetching news headlines.
+- **Chart.js**: JavaScript library for creating interactive charts.
+- **Finnhub API**: Used for fetching market news and sentiment data.
 
 ## 📝 License
 

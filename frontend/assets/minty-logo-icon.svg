@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#FFFFFF"/>
+  <!-- Simple geometric mint leaf -->
+  <path d="M32 10 C44 18, 54 34, 32 54 C10 34, 20 18, 32 10 Z" fill="#4CAF90"/>
+  <!-- Upward growth line -->
+  <path d="M32 54 L32 18" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+</svg> 
