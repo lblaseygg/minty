@@ -1,0 +1,183 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from xgboost import XGBRegressor
+import ta
+from ta.trend import SMAIndicator, EMAIndicator, MACD
+from ta.momentum import RSIIndicator, StochasticOscillator
+from ta.volatility import BollingerBands
+from ta.volume import VolumeWeightedAveragePrice
+import yfinance as yf
+from datetime import datetime, timedelta
+
+def create_features(df):
+    df = df.copy()
+    
+    # Price-based indicators
+    df['MA5'] = ta.trend.sma_indicator(df['Close'], window=5)
+    df['MA20'] = ta.trend.sma_indicator(df['Close'], window=20)
+    df['MA50'] = ta.trend.sma_indicator(df['Close'], window=50)
+    
+    # EMA indicators
+    df['EMA12'] = ta.trend.ema_indicator(df['Close'], window=12)
+    df['EMA26'] = ta.trend.ema_indicator(df['Close'], window=26)
+    
+    # MACD
+    macd = MACD(df['Close'])
+    df['MACD'] = macd.macd()
+    df['MACD_Signal'] = macd.macd_signal()
+    df['MACD_Hist'] = macd.macd_diff()
+    
+    # RSI
+    df['RSI'] = RSIIndicator(df['Close']).rsi()
+    
+    # Bollinger Bands
+    bollinger = BollingerBands(df['Close'])
+    df['BB_Upper'] = bollinger.bollinger_hband()
+    df['BB_Lower'] = bollinger.bollinger_lband()
+    df['BB_Middle'] = bollinger.bollinger_mavg()
+    
+    # Stochastic Oscillator
+    stoch = StochasticOscillator(df['High'], df['Low'], df['Close'])
+    df['Stoch_K'] = stoch.stoch()
+    df['Stoch_D'] = stoch.stoch_signal()
+    
+    # Volume indicators
+    df['Volume_MA5'] = ta.trend.sma_indicator(df['Volume'], window=5)
+    df['Volume_Change'] = df['Volume'].pct_change()
+    
+    # VWAP
+    df['VWAP'] = VolumeWeightedAveragePrice(
+        high=df['High'],
+        low=df['Low'],
+        close=df['Close'],
+        volume=df['Volume']
+    ).volume_weighted_average_price()
+    
+    # Price changes
+    df['Price_Change'] = df['Close'].pct_change()
+    df['Price_Change_5d'] = df['Close'].pct_change(periods=5)
+    
+    # Lagged closes, returns, volatility
+    for lag in range(1, 6):
+        df[f'Close_lag{lag}'] = df['Close'].shift(lag)
+        df[f'Return_lag{lag}'] = df['Close'].pct_change(lag)
+    df['Volatility_5d'] = df['Close'].pct_change().rolling(5).std()
+    df['Volatility_10d'] = df['Close'].pct_change().rolling(10).std()
+    
+    return df
+
+def load_and_train():
+    # Load CSV
+    data = pd.read_csv('nvidiastock.csv')
+    data['Date'] = pd.to_datetime(data['Date'])
+    data = data.sort_values('Date')
+    data['Volume'] = data['Volume'].str.replace(',', '').astype(float)
+    data['Close'] = data['Close'].astype(float)
+    data['High'] = data['High'].astype(float)
+    data['Low'] = data['Low'].astype(float)
+    data['Open'] = data['Open'].astype(float)
+
+    # Fetch latest price data from yfinance
+    ticker = yf.Ticker('NVDA')
+    latest_hist = ticker.history(period='2d', interval='1m')
+    if not latest_hist.empty:
+        last_csv_date = data['Date'].max()
+        if last_csv_date.tzinfo is not None:
+            last_csv_date = last_csv_date.tz_localize(None)
+        latest_row = latest_hist.iloc[-1]
+        latest_date = pd.to_datetime(latest_row.name)
+        if latest_date.tzinfo is not None:
+            latest_date = latest_date.tz_localize(None)
+        # If the latest yfinance data is newer, append it
+        if latest_date > last_csv_date:
+            new_row = {
+                'Date': latest_date,
+                'Open': latest_row['Open'],
+                'High': latest_row['High'],
+                'Low': latest_row['Low'],
+                'Close': latest_row['Close'],
+                'Volume': latest_row['Volume']
+            }
+            data = pd.concat([data, pd.DataFrame([new_row])], ignore_index=True)
+            data = data.sort_values('Date')
+
+    data = create_features(data)
+    data = data.dropna()
+    features = [
+        'MA5', 'MA20', 'MA50', 'EMA12', 'EMA26',
+        'MACD', 'MACD_Signal', 'MACD_Hist',
+        'RSI', 'BB_Upper', 'BB_Lower', 'BB_Middle',
+        'Stoch_K', 'Stoch_D',
+        'Volume_MA5', 'Volume_Change', 'VWAP',
+        'Price_Change', 'Price_Change_5d',
+        'Close_lag1', 'Close_lag2', 'Close_lag3', 'Close_lag4', 'Close_lag5',
+        'Return_lag1', 'Return_lag2', 'Return_lag3', 'Return_lag4', 'Return_lag5',
+        'Volatility_5d', 'Volatility_10d'
+    ]
+    X = data[features]
+    y = data['Close'].shift(-1)
+    X = X[:-1]
+    y = y[:-1]
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(X)
+    model = XGBRegressor(n_estimators=200, max_depth=6, learning_rate=0.05, random_state=42)
+    model.fit(X_scaled, y)
+    return data, scaler, model, features
+
+def get_prediction(data, scaler, model, features):
+    latest_data = create_features(data.tail(50))
+    latest_data = latest_data.dropna()
+    if latest_data.empty:
+        fallback_data = create_features(data).dropna()
+        if fallback_data.empty:
+            return None
+        latest_features = fallback_data[features].iloc[[-1]]
+    else:
+        latest_features = latest_data[features].iloc[[-1]]
+    latest_features_scaled = scaler.transform(latest_features)
+    predicted_price = model.predict(latest_features_scaled)[0]
+    return float(round(predicted_price, 2))
+
+def get_recommendation(data, features):
+    fallback_data = create_features(data).dropna()
+    if fallback_data.empty:
+        return None, None, {}
+    
+    latest_row = fallback_data.iloc[[-1]]
+    rsi = latest_row['RSI'].iloc[-1]
+    macd = latest_row['MACD'].iloc[-1]
+    macd_signal = latest_row['MACD_Signal'].iloc[-1]
+    stoch_k = latest_row['Stoch_K'].iloc[-1]
+    stoch_d = latest_row['Stoch_D'].iloc[-1]
+    
+    recommendation = 'hold'
+    confidence = 'medium'
+    
+    if rsi > 70:
+        recommendation = 'sell'
+        confidence = 'high'
+    elif rsi < 30:
+        recommendation = 'buy'
+        confidence = 'high'
+    if macd > macd_signal:
+        recommendation = 'buy'
+        confidence = 'high'
+    elif macd < macd_signal:
+        recommendation = 'sell'
+        confidence = 'high'
+    if stoch_k > 80 and stoch_d > 80:
+        recommendation = 'sell'
+        confidence = 'medium'
+    elif stoch_k < 20 and stoch_d < 20:
+        recommendation = 'buy'
+        confidence = 'medium'
+    
+    indicators = {
+        'rsi': float(round(rsi, 2)),
+        'macd': float(round(macd, 2)),
+        'stochastic_k': float(round(stoch_k, 2)),
+        'stochastic_d': float(round(stoch_d, 2))
+    }
+    
+    return recommendation, confidence, indicators 
