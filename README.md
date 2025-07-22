@@ -65,7 +65,7 @@ A modern, AI-driven stock trading platform that combines real-time market data, 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/minty.git
+   git clone https://github.com/lblaseygg/minty.git
    cd minty
    ```
 
@@ -257,4 +257,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Minty Trading Platform** - Empowering traders with AI-driven insights and intuitive portfolio management.
 
-*Built with ❤️ for Holberton School Portfolio Project*
+*Built with ❤️ for Holberton School Portfolio Project:)*
