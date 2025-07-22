@@ -67,40 +67,34 @@ def create_features(df):
     
     return df
 
-def load_and_train():
-    # Load CSV
-    data = pd.read_csv('nvidiastock.csv')
+def load_and_train(symbol='NVDA'):
+    # Fetch data from yfinance instead of CSV
+    ticker = yf.Ticker(symbol)
+    data = ticker.history(period='2y', interval='1d')
+    
+    if data.empty:
+        raise ValueError(f"No data available for {symbol}")
+    
+    # Reset index to get Date as a column
+    data = data.reset_index()
+    data = data.rename(columns={'Date': 'Date'})
+    
+    # Ensure we have the required columns
+    required_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
+    for col in required_columns:
+        if col not in data.columns:
+            raise ValueError(f"Missing required column: {col}")
+    
+    # Convert data types
     data['Date'] = pd.to_datetime(data['Date'])
-    data = data.sort_values('Date')
-    data['Volume'] = data['Volume'].str.replace(',', '').astype(float)
+    data['Volume'] = data['Volume'].astype(float)
     data['Close'] = data['Close'].astype(float)
     data['High'] = data['High'].astype(float)
     data['Low'] = data['Low'].astype(float)
     data['Open'] = data['Open'].astype(float)
-
-    # Fetch latest price data from yfinance
-    ticker = yf.Ticker('NVDA')
-    latest_hist = ticker.history(period='2d', interval='1m')
-    if not latest_hist.empty:
-        last_csv_date = data['Date'].max()
-        if last_csv_date.tzinfo is not None:
-            last_csv_date = last_csv_date.tz_localize(None)
-        latest_row = latest_hist.iloc[-1]
-        latest_date = pd.to_datetime(latest_row.name)
-        if latest_date.tzinfo is not None:
-            latest_date = latest_date.tz_localize(None)
-        # If the latest yfinance data is newer, append it
-        if latest_date > last_csv_date:
-            new_row = {
-                'Date': latest_date,
-                'Open': latest_row['Open'],
-                'High': latest_row['High'],
-                'Low': latest_row['Low'],
-                'Close': latest_row['Close'],
-                'Volume': latest_row['Volume']
-            }
-            data = pd.concat([data, pd.DataFrame([new_row])], ignore_index=True)
-            data = data.sort_values('Date')
+    
+    # Sort by date
+    data = data.sort_values('Date')
 
     data = create_features(data)
     data = data.dropna()
@@ -115,10 +109,21 @@ def load_and_train():
         'Return_lag1', 'Return_lag2', 'Return_lag3', 'Return_lag4', 'Return_lag5',
         'Volatility_5d', 'Volatility_10d'
     ]
+    
+    # Ensure all features exist
+    available_features = [f for f in features if f in data.columns]
+    if len(available_features) < len(features):
+        print(f"Warning: Some features missing for {symbol}. Available: {available_features}")
+        features = available_features
+    
     X = data[features]
     y = data['Close'].shift(-1)
     X = X[:-1]
     y = y[:-1]
+    
+    if X.empty or y.empty:
+        raise ValueError(f"Insufficient data for {symbol}")
+    
     scaler = MinMaxScaler()
     X_scaled = scaler.fit_transform(X)
     model = XGBRegressor(n_estimators=200, max_depth=6, learning_rate=0.05, random_state=42)
@@ -208,6 +213,7 @@ class Order(Base):
     qty = Column(Float, nullable=False)
     price = Column(Float, nullable=False)
     status = Column(String(20), nullable=False)
+    alpaca_order_id = Column(String(50), nullable=True)  # Store Alpaca order ID
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="orders")

@@ -2,9 +2,18 @@ let priceChart, rsiChart, macdChart;
 let currentTimeframe = '1Y';
 let lastLabels = { price: [], rsi: [], macd: [] };
 
+// Utility to get symbol from URL
+function getSelectedSymbol() {
+    const params = new URLSearchParams(window.location.search);
+    const symbol = params.get('symbol');
+    return symbol ? symbol.toUpperCase() : 'NVDA';
+}
+
+const selectedSymbol = getSelectedSymbol();
+
 async function fetchLiveData() {
     try {
-        const res = await fetch('/live_data');
+        const res = await fetch(`/live_data/${selectedSymbol}`);
         if (!res.ok) throw new Error('Network response was not ok');
         return await res.json();
     } catch (e) {
@@ -13,17 +22,17 @@ async function fetchLiveData() {
 }
 
 async function fetchHistoricalData(tf = '1Y') {
-    const res = await fetch(`/historical_data?tf=${tf}`);
+    const res = await fetch(`/historical_data/${selectedSymbol}?tf=${tf}`);
     return await res.json();
 }
 
 async function fetchPrediction() {
-    const res = await fetch('/predict');
+    const res = await fetch(`/predict/${selectedSymbol}`);
     return await res.json();
 }
 
 async function fetchRecommendation() {
-    const res = await fetch('/recommend');
+    const res = await fetch(`/recommend/${selectedSymbol}`);
     return await res.json();
 }
 
@@ -86,6 +95,7 @@ function renderCharts(historical, forceRecreate = false) {
                     data: historical.prices,
                     borderColor: '#76b900',
                     backgroundColor: 'rgba(118,185,0,0.08)',
+                    borderWidth: 1,
                     fill: true,
                     tension: 0.3,
                     pointRadius: 0
@@ -109,14 +119,14 @@ function renderCharts(historical, forceRecreate = false) {
             scales: {
                 x: {
                     display: false, // Hide x-axis labels
-                    grid: { color: 'rgba(255,255,255,0.05)' }
+                    grid: { color: 'rgba(0,0,0,0.1)' }
                 },
                 y: {
                     type: 'linear',
                     position: 'left',
-                    title: { display: true, text: 'Price', color: '#e0e0e0' },
-                    ticks: { color: '#e0e0e0', callback: v => `$${v}` },
-                    grid: { color: 'rgba(255,255,255,0.08)' }
+                    title: { display: true, text: 'Price', color: '#000000' },
+                    ticks: { color: '#000000', callback: v => `$${v}` },
+                    grid: { color: 'rgba(0,0,0,0.1)' }
                 }
             }
         }
@@ -135,6 +145,7 @@ function renderCharts(historical, forceRecreate = false) {
                     data: historical.rsi,
                     borderColor: '#4caf50',
                     backgroundColor: 'rgba(76,175,80,0.08)',
+                    borderWidth: 1,
                     fill: true,
                     tension: 0.3,
                     pointRadius: 0
@@ -144,18 +155,18 @@ function renderCharts(historical, forceRecreate = false) {
         options: {
             responsive: true,
             plugins: {
-                legend: { labels: { color: '#e0e0e0' } },
+                legend: { labels: { color: '#000000' } },
                 title: { display: false }
             },
             scales: {
                 x: {
                     display: false, // Hide x-axis labels
-                    grid: { color: 'rgba(255,255,255,0.05)' }
+                    grid: { color: 'rgba(0,0,0,0.1)' }
                 },
                 y: {
                     min: 0, max: 100,
-                    ticks: { color: '#e0e0e0' },
-                    grid: { color: 'rgba(255,255,255,0.08)' }
+                    ticks: { color: '#000000' },
+                    grid: { color: 'rgba(0,0,0,0.1)' }
                 }
             }
         }
@@ -174,6 +185,7 @@ function renderCharts(historical, forceRecreate = false) {
                     data: historical.macd,
                     borderColor: '#ffd700',
                     backgroundColor: 'rgba(255,215,0,0.08)',
+                    borderWidth: 1,
                     fill: false,
                     tension: 0.3,
                     pointRadius: 0
@@ -183,6 +195,7 @@ function renderCharts(historical, forceRecreate = false) {
                     data: historical.macd_signal,
                     borderColor: '#76b900',
                     backgroundColor: 'rgba(118,185,0,0.08)',
+                    borderWidth: 1,
                     fill: false,
                     tension: 0.3,
                     pointRadius: 0
@@ -192,15 +205,15 @@ function renderCharts(historical, forceRecreate = false) {
         options: {
             responsive: true,
             plugins: {
-                legend: { labels: { color: '#e0e0e0' } },
+                legend: { labels: { color: '#000000' } },
                 title: { display: false }
             },
             scales: {
                 x: {
                     display: false, // Hide x-axis labels
-                    grid: { color: 'rgba(255,255,255,0.05)' }
+                    grid: { color: 'rgba(0,0,0,0.1)' }
                 },
-                y: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+                y: { ticks: { color: '#000000' }, grid: { color: 'rgba(0,0,0,0.1)' } }
             }
         }
     };
@@ -280,6 +293,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     });
+
+    // Buy/Sell button logic
+    document.getElementById('buy-btn').addEventListener('click', function() {
+        window.location.href = `trade.html?symbol=${selectedSymbol}&side=buy`;
+    });
+
+    document.getElementById('sell-btn').addEventListener('click', function() {
+        window.location.href = `trade.html?symbol=${selectedSymbol}&side=sell`;
+    });
+
     await updateDashboard(currentTimeframe, true);
     setInterval(() => updateDashboard(currentTimeframe, false), 15000); // Refresh every 15 seconds
 }); 

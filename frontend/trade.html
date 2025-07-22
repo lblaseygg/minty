@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade - Minty</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="assets/minty-logo-icon.svg" alt="Minty Logo" width="40" height="40">
+                    <h1>Minty</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </a>
+                    <a href="trade.html" class="nav-link active">
+                        <i class="fas fa-exchange-alt"></i>
+                        Trade
+                    </a>
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        Profile
+                    </a>
+                    <button onclick="logout()" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="trading-container">
+                <!-- Account Summary -->
+                <div class="account-summary">
+                    <h2>Account Summary</h2>
+                    <div class="account-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Cash</span>
+                            <span class="stat-value" id="cash-amount">$100,000.00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Buying Power</span>
+                            <span class="stat-value" id="buying-power">$100,000.00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Portfolio Value</span>
+                            <span class="stat-value" id="portfolio-value">$100,000.00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Equity</span>
+                            <span class="stat-value" id="equity">$100,000.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trading Form -->
+                <div class="trading-form">
+                    <h2>Place Order</h2>
+                    <form id="order-form">
+                        <div class="form-group">
+                            <label for="symbol">Symbol</label>
+                            <select id="symbol" name="symbol" required>
+                                <option value="">Select a stock...</option>
+                                <!-- Stock options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="side">Side</label>
+                            <select id="side" name="side" required>
+                                <option value="buy">Buy</option>
+                                <option value="sell">Sell</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="qty">Quantity</label>
+                            <input type="number" id="qty" name="qty" min="1" step="1" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="price">Price (Optional - Market Order)</label>
+                            <input type="number" id="price" name="price" min="0" step="0.01">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Place Order
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Portfolio Positions -->
+                <div class="portfolio-positions">
+                    <h2>Portfolio Positions</h2>
+                    <div id="positions-container">
+                        <p class="no-positions">No positions yet. Start trading to see your portfolio!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order History -->
+            <div class="order-history">
+                <h2>Order History</h2>
+                <div class="order-filters">
+                    <select id="symbol-filter">
+                        <option value="">All Symbols</option>
+                    </select>
+                    <select id="side-filter">
+                        <option value="">All Sides</option>
+                        <option value="buy">Buy</option>
+                        <option value="sell">Sell</option>
+                    </select>
+                    <select id="status-filter">
+                        <option value="">All Status</option>
+                        <option value="filled">Filled</option>
+                        <option value="pending">Pending</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="orders-table-container">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Symbol</th>
+                                <th>Side</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-tbody">
+                            <!-- Orders will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Processing order...</p>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="message-container" class="message-container"></div>
+
+    <script src="trade.js"></script>
+</body>
+</html> 

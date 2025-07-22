@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minty - AI-Powered Stock Trading Platform</title>
+    <link rel="stylesheet" href="landing-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="assets/minty-logo-icon.svg">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/minty-logo-icon.svg" alt="Minty Logo" width="32" height="32">
+                <span></span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#intro" class="nav-link">Home</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="documentation.html" class="nav-link">Documentation</a></li>
+                <li><a href="login.html" class="nav-link cta-button">Get Started</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Intro Section -->
+    <section id="intro" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Minty</span>
+                </h1>
+                <p class="hero-subtitle">AI-Powered Stock Trading Platform</p>
+                <p class="hero-description">
+                    Experience the future of trading with real-time analytics, AI predictions, and intuitive portfolio management. 
+                    Make informed decisions with cutting-edge technology at your fingertips.
+                </p>
+                <div class="hero-buttons">
+                    <a href="login.html" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i>
+                        Start Trading
+                    </a>
+                    <a href="#features" class="btn btn-secondary">
+                        <i class="fas fa-play"></i>
+                        See Features
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="dashboard-preview">
+                    <div class="preview-header">
+                        <div class="preview-logo">
+                            <img src="assets/minty-logo-icon.svg" alt="Minty" width="24" height="24">
+                            <span>Minty Dashboard</span>
+                        </div>
+                        <div class="preview-price">
+                            <span class="price">$485.09</span>
+                            <span class="change positive">+2.34%</span>
+                        </div>
+                    </div>
+                    <div class="preview-chart">
+                        <svg class="chart-svg" viewBox="0 0 400 150" preserveAspectRatio="xMidYMid meet">
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#007AFF;stop-opacity:0.3" />
+                                    <stop offset="100%" style="stop-color:#007AFF;stop-opacity:0" />
+                                </linearGradient>
+                            </defs>
+                            <path class="chart-area" d="M0,150 L0,100 C50,80 100,90 150,60 C200,30 250,50 300,40 C350,30 400,50 400,50 L400,150 Z" />
+                            <path class="chart-line-path" d="M0,100 C50,80 100,90 150,60 C200,30 250,50 300,40 C350,30 400,50 400,50" />
+                            <circle class="chart-dot" cx="400" cy="50" r="5" />
+                        </svg>
+                    </div>
+                    <div class="preview-stats">
+                        <div class="stat">
+                            <span class="stat-label">Portfolio Value</span>
+                            <span class="stat-value">$125,430</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Today's P&L</span>
+                            <span class="stat-value positive">+$2,847</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Powerful Features</h2>
+                <p>Everything you need for successful trading</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>AI-Powered Predictions</h3>
+                    <p>
+                        Leverage advanced machine learning algorithms to get accurate stock price predictions. 
+                        Our AI analyzes market patterns, technical indicators, and market sentiment to provide 
+                        you with actionable insights for better trading decisions.
+                    </p>
+                    <div class="feature-image">
+                        <div class="ai-prediction-demo">
+                            <div class="prediction-header">
+                                <span class="prediction-label">AI Prediction</span>
+                                <span class="prediction-value">$512.45</span>
+                            </div>
+                            <div class="prediction-chart">
+                                <div class="prediction-line"></div>
+                            </div>
+                            <div class="prediction-confidence">
+                                <span>Confidence: 87%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Real-Time Analytics</h3>
+                    <p>
+                        Access live market data with comprehensive technical analysis. View interactive charts 
+                        with multiple timeframes, RSI, MACD indicators, and volume analysis. Stay ahead of 
+                        the market with real-time price updates and market news.
+                    </p>
+                    <div class="feature-image">
+                        <div class="analytics-demo">
+                            <div class="chart-container">
+                                <div class="price-chart">
+                                    <div class="chart-candles">
+                                        <div class="candle green"></div>
+                                        <div class="candle red"></div>
+                                        <div class="candle green"></div>
+                                        <div class="candle green"></div>
+                                    </div>
+                                </div>
+                                <div class="indicators">
+                                    <div class="rsi-indicator">
+                                        <span>RSI: 65</span>
+                                    </div>
+                                    <div class="macd-indicator">
+                                        <span>MACD: +2.34</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3>Portfolio Management</h3>
+                    <p>
+                        Track your investments with comprehensive portfolio management tools. Monitor your 
+                        positions, track P&L, view allocation charts, and manage your trading history. 
+                        Get insights into your trading performance with detailed analytics and reports.
+                    </p>
+                    <div class="feature-image">
+                        <div class="portfolio-demo">
+                            <div class="portfolio-summary">
+                                <div class="portfolio-item">
+                                    <span class="stock-symbol">NVDA</span>
+                                    <span class="stock-value">$45,230</span>
+                                </div>
+                                <div class="portfolio-item">
+                                    <span class="stock-symbol">AAPL</span>
+                                    <span class="stock-value">$32,150</span>
+                                </div>
+                                <div class="portfolio-item">
+                                    <span class="stock-symbol">TSLA</span>
+                                    <span class="stock-value">$28,040</span>
+                                </div>
+                            </div>
+                            <div class="portfolio-chart">
+                                <div class="pie-chart">
+                                    <div class="pie-segment nvda"></div>
+                                    <div class="pie-segment aapl"></div>
+                                    <div class="pie-segment tsla"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="section-header">
+                <h2>About Minty</h2>
+                <p>The story behind our trading platform</p>
+            </div>
+            <div class="about-content">
+                <div class="about-story">
+                    <h3>Our Inspiration</h3>
+                    <p>
+                        I wanted to create a platform that would democratize access to professional-grade trading 
+                        tools while making them accessible to everyone. The vision was simple: combine the power 
+                        of artificial intelligence with an intuitive user interface to help people make better 
+                        trading decisions.
+                    </p>
+                    <p>
+                        Over the course of 3 months, I developed Minty as a Portfolio Project for 
+                        <a href="https://www.holbertonschool.com/" target="_blank" rel="noopener">Holberton School</a>, 
+                        learning everything from Flask backend development to real-time data processing and 
+                        machine learning integration. The project evolved from a simple stock tracker to a 
+                        comprehensive trading platform with AI predictions, real-time analytics, and portfolio management.
+                    </p>
+                    <p>
+                        Today, Minty represents the culmination of that vision - a platform that empowers traders 
+                        of all levels to make informed decisions with confidence.
+                    </p>
+                </div>
+                
+                <div class="team-section">
+                    <h3>Meet the Team</h3>
+                    <div class="team-member">
+                        <div class="member-info">
+                            <h4>Blasey</h4>
+                            <p>Full Stack Developer & Project Lead</p>
+                            <div class="member-links">
+                                <a href="https://github.com/yourusername" target="_blank" rel="noopener">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                <a href="https://linkedin.com/in/yourusername" target="_blank" rel="noopener">
+                                    <i class="fab fa-linkedin"></i>
+                                </a>
+                                <a href="https://twitter.com/yourusername" target="_blank" rel="noopener">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-links">
+                    <h3>Project Resources</h3>
+                    <div class="links-grid">
+                        <a href="https://github.com/yourusername/minty" target="_blank" rel="noopener" class="project-link">
+                            <i class="fab fa-github"></i>
+                            <span>View Source Code</span>
+                        </a>
+                        <a href="login.html" class="project-link">
+                            <i class="fas fa-rocket"></i>
+                            <span>Launch Application</span>
+                        </a>
+                        <a href="https://docs.minty.com" target="_blank" rel="noopener" class="project-link">
+                            <i class="fas fa-book"></i>
+                            <span>Documentation</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="assets/minty-logo-icon.svg" alt="Minty Logo" width="32" height="32">
+                    <span>Minty</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#intro">Home</a>
+                    <a href="#features">Features</a>
+                    <a href="#about">About</a>
+                    <a href="documentation.html">Documentation</a>
+                    <a href="login.html">Login</a>
+                </div>
+                <div class="footer-social">
+                    <a href="https://github.com/lblaseygg" target="_blank" rel="noopener">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/luisfernandofeliciano/" target="_blank" rel="noopener">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://x.com/luisdevgg" target="_blank" rel="noopener">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 Minty. All rights reserved. | Portfolio Project for Holberton School</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="landing.js"></script>
+</body>
+</html>

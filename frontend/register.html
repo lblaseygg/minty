@@ -3,22 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minty - Login</title>
+    <title>Minty - Sign Up</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/svg+xml" href="assets/minty-logo-icon.svg">
 </head>
 <body>
-        <!-- Overlay -->
+   
 
+    <!-- Overlay -->
         <main>
             <div class="auth-container">
                 <div class="auth-header">
-                    <h2>Welcome Back</h2>
-                    <p>Sign in to your Minty account</p>
+                    <h2>Create Account</h2>
+                    <p>Join Minty and start your investment journey</p>
                 </div>
 
-                <form id="login-form" class="auth-form">
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="username" name="username" required placeholder="Username" minlength="3" maxlength="50">
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <div class="input-with-icon">
                             <i class="fas fa-envelope"></i>
@@ -29,16 +37,24 @@
                     <div class="form-group">
                         <div class="input-with-icon">
                             <i class="fas fa-lock"></i>
-                            <input type="password" id="password" name="password" required placeholder="Password">
+                            <input type="password" id="password" name="password" required placeholder="Password" minlength="6">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="confirm-password" name="confirm-password" required placeholder="Confirm Password" minlength="6">
                         </div>
                     </div>
 
                     <button type="submit" class="btn-primary btn-full">
-                        Sign In
+                        Create Account
                     </button>
 
                     <div class="auth-footer">
-                        <a href="register.html">Create account</a>
+                        <span>Already have an account? </span>
+                        <a href="login.html">Sign in</a>
                     </div>
                 </form>
             </div>
@@ -65,6 +81,6 @@
             window.location.href = 'login.html';
         }
     </script>
-    <script src="login.js"></script>
+    <script src="register.js"></script>
 </body>
 </html> 

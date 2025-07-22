@@ -1,112 +1,260 @@
-# <img src="frontend/assets/minty-logo-primary.svg" alt="Minty Logo" width="100" height="100" style="vertical-align: middle; margin-right: 10px;"/> Minty
+# 🌿 Minty - AI-Powered Stock Trading Platform
 
-> Fresh Finance, Smart Investing
-> 
+A modern, AI-driven stock trading platform that combines real-time market data, machine learning predictions, and intuitive portfolio management. Built as a Portfolio Project for Holberton School.
 
-Minty is a modern, AI-powered platform for stock analysis, trading, and (soon) crypto and blockchain integration. Designed for both new and experienced investors, Minty delivers real-time insights, actionable predictions, and a seamless trading experience—all with a fresh, intuitive interface.
+## ✨ Features
 
-## 🚀 Features
+### 🚀 **Core Trading Features**
+- **Real-time Market Data**: Live stock prices with Yahoo Finance integration
+- **AI-Powered Predictions**: Machine learning models for price forecasting
+- **Paper Trading**: Risk-free trading simulation with virtual money
+- **Portfolio Management**: Track positions, P&L, and performance analytics
+- **Technical Analysis**: RSI, MACD, Bollinger Bands, and more indicators
 
-### Real-Time Stock Data
+### 🎯 **Advanced Capabilities**
+- **Smart Recommendations**: AI-driven buy/sell/hold signals
+- **Multi-Stock Support**: Trade NVIDIA, Apple, AMD, and more
+- **Order Management**: Market and limit orders with real-time execution
+- **Performance Tracking**: Comprehensive portfolio analytics and charts
+- **User Authentication**: Secure JWT-based authentication system
 
-- Instantly view live prices, volume, and technical indicators for NVIDIA (and more stocks in the future)
-
-### AI-Powered Predictions
-
-- Get machine learning–driven forecasts and confidence levels to help guide your investment decisions
-
-### Technical Analysis
-
-- Visualize key indicators like RSI, MACD, and more, all in one dashboard
-
-
-### Paper Trading `
-`future implementation`
-- Practice buying and selling stocks with simulated trades—no risk, just learning
-
-### User Authentication & Profiles 
-`future implementation`
-- Sign up, log in, and manage your personalized dashboard and trading history
-
-### Order Management
-`future implementation`
-- Place buy/sell orders, view your order history, and track your simulated portfolio
-
-## 🌱 Roadmap
-
-### Multi-Asset Support
-
-- Analyze and trade a wider range of stocks, ETFs, and eventually cryptocurrencies
-
-### Blockchain & Crypto Integration
-
-- Mint, track, and trade digital assets
-- Connect your crypto wallet and manage both traditional and digital investments in one place
-
-### Watchlists & Alerts
-
-- Create custom watchlists and receive notifications for price movements or AI signals
-
-### News & Sentiment Analysis
-
-- Stay informed with curated news feeds and real-time sentiment analysis for your favorite assets
-
-### Mobile App
-
-- Take Minty on the go with a fully responsive mobile experience
-
-### Social & Community Features
-
-- Share insights, follow top traders, and learn from the Minty community
+### 🎨 **User Experience**
+- **Apple-Inspired Design**: Clean, modern interface with smooth animations
+- **Responsive Layout**: Optimized for desktop, tablet, and mobile
+- **Interactive Charts**: Real-time data visualization with Chart.js
+- **Intuitive Navigation**: Seamless user flow from landing to trading
 
 ## 🛠️ Tech Stack
 
-### Backend
+### **Frontend**
+- **HTML5**: Semantic markup and accessibility
+- **CSS3**: Modern styling with Apple-inspired design
+- **JavaScript (ES6+)**: Interactive features and real-time updates
+- **Chart.js**: Data visualization and technical charts
+- **Font Awesome**: Icon library for UI elements
 
-- Python
-- Flask
+### **Backend**
+- **Python 3.13**: Server-side logic and API development
+- **Flask**: Web framework for RESTful API endpoints
+- **SQLAlchemy**: Object-relational mapping (ORM)
+- **Flask-JWT-Extended**: Authentication and authorization
+- **Flask-CORS**: Cross-origin resource sharing
 
-### Frontend
+### **Database**
+- **MySQL**: Relational database management system
+- **XAMPP**: Local development environment
+- **SQLAlchemy ORM**: Database abstraction layer
 
-- HTML5
-- CSS3
-- JavaScript (with plans for React)
+### **Machine Learning**
+- **scikit-learn**: Machine learning algorithms
+- **XGBoost**: Gradient boosting for price predictions
+- **pandas**: Data manipulation and analysis
+- **numpy**: Numerical computing
+- **yfinance**: Yahoo Finance API for market data
+- **ta**: Technical analysis indicators
 
-### Database
+## 🚀 Quick Start
 
-- PostgreSQL
+### **Prerequisites**
+- Python 3.13+
+- MySQL (via XAMPP)
+- Git
+- Modern web browser
 
-### APIs
+### **Installation**
 
-- yfinance (stock data)
-- Alpaca (trading)
-- Future blockchain APIs
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/minty.git
+   cd minty
+   ```
 
-### AI/ML
+2. **Set up virtual environment**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-- scikit-learn
-- pandas
-- NumPy
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Libraries and APIs Used
+4. **Configure database**
+   ```bash
+   # Start XAMPP and enable MySQL
+   # Create database: minty_db
+   python3 setup_xampp_database.py
+   ```
 
-- **Flask**: Web framework for the backend.
-- **yfinance**: Library for fetching real-time and historical stock data.
-- **pandas**: Data manipulation and analysis.
-- **numpy**: Numerical computing.
-- **scikit-learn**: Machine learning library for model training and evaluation.
-- **XGBoost**: Gradient boosting library for improved prediction accuracy.
-- **ta**: Technical analysis library for computing indicators like RSI and MACD.
-- **BeautifulSoup**: Web scraping library for fetching news headlines.
-- **Chart.js**: JavaScript library for creating interactive charts.
-- **Finnhub API**: Used for fetching market news and sentiment data.
+5. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your database credentials
+   ```
 
-## 📝 License
+6. **Start the application**
+   ```bash
+   python3 backend/app.py
+   ```
 
-This project is licensed under the MIT License - see the [LICENSE](https://www.notion.so/LICENSE) file for details.
+7. **Access the platform**
+   - Open browser and navigate to: `http://localhost:5001`
+   - Or directly open: `frontend/landing.html`
+
+## 📖 Usage Guide
+
+### **Getting Started**
+1. **Landing Page**: Explore features and project overview
+2. **Create Account**: Register with email and password
+3. **Login**: Access your trading dashboard
+4. **First Trade**: Select a stock and place your first paper trade
+
+### **Trading Interface**
+- **Stock Selection**: Choose from available stocks (NVDA, AAPL, AMD, etc.)
+- **Order Placement**: Set quantity, price, and order type
+- **Portfolio View**: Monitor positions and performance
+- **AI Insights**: View predictions and recommendations
+
+## 🏗️ Project Structure
+
+```
+minty/
+├── frontend/                 # Frontend application
+│   ├── assets/              # Images, logos, and static files
+│   │   ├── minty-logo-icon.svg
+│   │   └── *.svg            # Stock company logos
+│   ├── landing.html         # Landing page
+│   ├── documentation.html   # Documentation page
+│   ├── index.html           # Main dashboard
+│   ├── login.html           # Login page
+│   ├── register.html        # Registration page
+│   ├── trade.html           # Trading interface
+│   ├── portfolio.html       # Portfolio management
+│   ├── profile.html         # User profile
+│   ├── *.css                # Stylesheets
+│   └── *.js                 # JavaScript files
+├── backend/                 # Backend application
+│   ├── app.py              # Main Flask application
+│   ├── model.py            # Machine learning models
+│   ├── config.py           # Configuration settings
+│   └── database.py         # Database models
+├── database/               # Database setup and scripts
+├── requirements.txt        # Python dependencies
+├── .env.example           # Environment variables template
+├── setup_xampp_database.py # Database setup script
+└── README.md              # Project documentation
+```
+
+## 🔧 Configuration
+
+### **Environment Variables**
+```env
+# Database Configuration
+DATABASE_TYPE=mysql
+MYSQL_USER=minty_user
+MYSQL_PASSWORD=your_secure_password
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_DATABASE=minty_db
+
+# Security
+JWT_SECRET_KEY=your_very_secure_secret_key_here
+
+# Application
+FLASK_ENV=development
+DEBUG=True
+
+# Optional: Alpaca Trading API
+ALPACA_API_KEY=your_alpaca_key
+ALPACA_SECRET_KEY=your_alpaca_secret
+ALPACA_BASE_URL=https://paper-api.alpaca.markets
+```
+
+## 📊 API Reference
+
+### **Authentication Endpoints**
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User authentication
+- `POST /auth/logout` - User logout
+
+### **Market Data Endpoints**
+- `GET /stocks` - Get available stocks
+- `GET /live_data/{symbol}` - Real-time stock data
+- `GET /historical_data/{symbol}` - Historical price data
+- `GET /predict/{symbol}` - AI price predictions
+- `GET /recommend/{symbol}` - Trading recommendations
+
+### **Trading Endpoints**
+- `POST /orders` - Create trading order
+- `GET /orders` - Get user orders
+- `GET /portfolio` - Get portfolio positions
+- `GET /account` - Get account information
+
+## 🤖 Machine Learning Features
+
+### **AI Prediction Model**
+- **Algorithm**: XGBoost Regressor
+- **Features**: Price data, technical indicators, market sentiment
+- **Training**: 2 years of historical data
+- **Output**: Price predictions with confidence scores
+
+### **Technical Indicators**
+- **RSI**: Relative Strength Index
+- **MACD**: Moving Average Convergence Divergence
+- **Bollinger Bands**: Volatility indicators
+- **Moving Averages**: Trend analysis
+
+## 🚀 Deployment
+
+### **Local Development**
+```bash
+python3 backend/app.py
+# Access at http://localhost:5001
+```
+
+### **Production Deployment**
+- **Heroku**: Easy deployment with Git integration
+- **Railway**: Modern platform with automatic deployments
+- **AWS**: Enterprise-grade cloud deployment
+- **Docker**: Containerized deployment option
+
+## 📚 Documentation
+
+- **User Guide**: [Documentation](frontend/documentation.html)
+- **API Reference**: Complete endpoint documentation
+- **Setup Guide**: Step-by-step installation instructions
+
+## 👨‍💻 Team
+
+- **Luis Fernando Feliciano**: Full-stack developer and project lead
+- **GitHub**: [@lblaseygg](https://github.com/lblaseygg)
+- **LinkedIn**: [Luis Fernando Feliciano](https://www.linkedin.com/in/luisfernandofeliciano/)
+- **Twitter**: [@luisdevgg](https://x.com/luisdevgg)
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Holberton School**: Portfolio project framework
+- **Yahoo Finance**: Market data API
+- **Chart.js**: Data visualization library
+- **Font Awesome**: Icon library
+- **Flask**: Web framework
+- **XGBoost**: Machine learning library
 
 ---
+
+**Minty Trading Platform** - Empowering traders with AI-driven insights and intuitive portfolio management.
+
+*Built with ❤️ for Holberton School Portfolio Project*
