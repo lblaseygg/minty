@@ -1,7 +1,7 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
-# Set environment variables (fixed format)
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=backend/app.py
@@ -11,21 +11,25 @@ ENV FLASK_ENV=production
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        gcc \
-        g++ \
-        default-libmysqlclient-dev \
-        pkg-config \
-        build-essential \
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    default-libmysqlclient-dev \
+    pkg-config \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
-RUN pip install --upgrade pip
+# Upgrade pip and setuptools
+RUN pip install --upgrade pip setuptools wheel
 
-# Install Python dependencies
+# Copy requirements first for better caching
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Python dependencies with error handling
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt || \
+    (echo "Failed to install requirements, trying individual packages..." && \
+     pip install --no-cache-dir Flask==2.3.3 Flask-CORS==4.0.0 Flask-JWT-Extended==4.5.3 Flask-SQLAlchemy==3.0.5 SQLAlchemy==2.0.21 PyMySQL==1.1.0 scikit-learn==1.3.0 XGBoost==1.7.6 pandas==2.0.3 numpy==1.24.3 yfinance==0.2.18 requests==2.31.0 python-dotenv==1.0.0 gunicorn==21.2.0)
 
 # Copy project
 COPY . /app/
