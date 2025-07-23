@@ -19,6 +19,7 @@ ta==0.10.2
 # Financial Data
 yfinance==0.2.18
 requests==2.31.0
+alpaca-trade-api==3.0.2
 
 # Data Processing
 beautifulsoup4==4.12.2
