@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="80" viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="80" fill="#FFFFFF"/>
+  <!-- Wordmark 'minty' in Montserrat -->
+  <text x="20" y="55" font-family="Montserrat, Arial, sans-serif" font-size="48" fill="#2C3E50" font-weight="bold">m</text>
+  <text x="60" y="55" font-family="Montserrat, Arial, sans-serif" font-size="48" fill="#2C3E50" font-weight="bold">i</text>
+  <!-- Leaf dot for 'i' -->
+  <ellipse cx="75" cy="38" rx="4" ry="7" fill="#4CAF90" transform="rotate(-20 75 38)"/>
+  <text x="80" y="55" font-family="Montserrat, Arial, sans-serif" font-size="48" fill="#2C3E50" font-weight="bold">nty</text>
+</svg> 

@@ -199,10 +199,12 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     password_hash = Column(String(512), nullable=False)
+    balance = Column(Float, default=100000.0)  # Starting balance for paper trading
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     profile = relationship("Profile", uselist=False, back_populates="user")
     orders = relationship("Order", back_populates="user")
+    portfolio = relationship("Portfolio", back_populates="user")
 
 class Order(Base):
     __tablename__ = 'orders'
@@ -217,6 +219,43 @@ class Order(Base):
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="orders")
+
+class Portfolio(Base):
+    __tablename__ = 'portfolio'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    symbol = Column(String(10), nullable=False)
+    quantity = Column(Float, nullable=False)
+    avg_price = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", back_populates="portfolio")
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'symbol': self.symbol,
+            'quantity': self.quantity,
+            'avg_price': self.avg_price,
+            'current_price': self.get_current_price(),
+            'total_value': self.quantity * self.get_current_price(),
+            'unrealized_pnl': self.get_unrealized_pnl(),
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
+    
+    def get_current_price(self):
+        try:
+            stock = yf.Ticker(self.symbol)
+            return stock.info.get('regularMarketPrice', self.avg_price)
+        except:
+            return self.avg_price
+    
+    def get_unrealized_pnl(self):
+        current_price = self.get_current_price()
+        return (current_price - self.avg_price) * self.quantity
 
 class Profile(Base):
     __tablename__ = 'profiles'

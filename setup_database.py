@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-XAMPP MySQL Database Setup Script for Minty
-This script helps set up the MySQL database for the Minty application using XAMPP.
+Database Setup Script for Minty
+This script helps set up the MySQL database for the Minty application.
 """
 
 import pymysql
@@ -11,18 +11,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def create_database():
-    """Create the database and tables using XAMPP MySQL"""
+    """Create the database and tables"""
     
-    # XAMPP MySQL configuration
+    # Database configuration
     MYSQL_USER = os.getenv('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
+    MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
+    MYSQL_PORT = int(os.getenv('MYSQL_PORT', '3306'))
     MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'minty_db')
-    MYSQL_SOCKET = os.getenv('MYSQL_SOCKET', '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock')
     
     try:
-        # Connect to XAMPP MySQL using socket
+        # Connect to MySQL server (without specifying database)
         connection = pymysql.connect(
-            unix_socket=MYSQL_SOCKET,
+            host=MYSQL_HOST,
+            port=MYSQL_PORT,
             user=MYSQL_USER,
             password=MYSQL_PASSWORD,
             charset='utf8mb4'
@@ -45,7 +47,6 @@ def create_database():
                 username VARCHAR(50) UNIQUE NOT NULL,
                 email VARCHAR(120) UNIQUE NOT NULL,
                 password_hash VARCHAR(512) NOT NULL,
-                balance FLOAT DEFAULT 100000.0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -63,21 +64,6 @@ def create_database():
                 alpaca_order_id VARCHAR(50) NULL,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
-        
-        # Portfolio table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS portfolio (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT NOT NULL,
-                symbol VARCHAR(10) NOT NULL,
-                quantity FLOAT NOT NULL,
-                avg_price FLOAT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                UNIQUE KEY unique_user_symbol (user_id, symbol)
             )
         """)
         
@@ -112,75 +98,6 @@ def create_database():
         
     except pymysql.Error as e:
         print(f"❌ Error setting up database: {e}")
-        print("\n🔧 Troubleshooting:")
-        print("1. Make sure XAMPP is running")
-        print("2. Start MySQL in XAMPP Control Panel")
-        print("3. Check if the socket file exists:")
-        print(f"   ls -la {MYSQL_SOCKET}")
-        return False
-    
-    finally:
-        if connection:
-            connection.close()
-    
-    return True
-
-def update_existing_database():
-    """Update existing database with new fields and tables"""
-    
-    MYSQL_USER = os.getenv('MYSQL_USER', 'root')
-    MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
-    MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'minty_db')
-    MYSQL_SOCKET = os.getenv('MYSQL_SOCKET', '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock')
-    
-    try:
-        connection = pymysql.connect(
-            unix_socket=MYSQL_SOCKET,
-            user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            database=MYSQL_DATABASE,
-            charset='utf8mb4'
-        )
-        
-        cursor = connection.cursor()
-        
-        print("Updating existing database...")
-        
-        # Check if balance column exists in users table
-        cursor.execute("SHOW COLUMNS FROM users LIKE 'balance'")
-        if not cursor.fetchone():
-            print("Adding balance column to users table...")
-            cursor.execute("ALTER TABLE users ADD COLUMN balance FLOAT DEFAULT 100000.0")
-            # Update existing users to have the default balance
-            cursor.execute("UPDATE users SET balance = 100000.0 WHERE balance IS NULL")
-        
-        # Check if portfolio table exists
-        cursor.execute("SHOW TABLES LIKE 'portfolio'")
-        if not cursor.fetchone():
-            print("Creating portfolio table...")
-            cursor.execute("""
-                CREATE TABLE portfolio (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    user_id INT NOT NULL,
-                    symbol VARCHAR(10) NOT NULL,
-                    quantity FLOAT NOT NULL,
-                    avg_price FLOAT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                    UNIQUE KEY unique_user_symbol (user_id, symbol)
-                )
-            """)
-        
-        # Create indexes for portfolio table
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_portfolio_user_id ON portfolio(user_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_portfolio_symbol ON portfolio(symbol)")
-        
-        connection.commit()
-        print("✅ Database updated successfully!")
-        
-    except pymysql.Error as e:
-        print(f"❌ Error updating database: {e}")
         return False
     
     finally:
@@ -194,12 +111,14 @@ def create_sample_data():
     
     MYSQL_USER = os.getenv('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
+    MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
+    MYSQL_PORT = int(os.getenv('MYSQL_PORT', '3306'))
     MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'minty_db')
-    MYSQL_SOCKET = os.getenv('MYSQL_SOCKET', '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock')
     
     try:
         connection = pymysql.connect(
-            unix_socket=MYSQL_SOCKET,
+            host=MYSQL_HOST,
+            port=MYSQL_PORT,
             user=MYSQL_USER,
             password=MYSQL_PASSWORD,
             database=MYSQL_DATABASE,
@@ -257,57 +176,19 @@ def create_sample_data():
     
     return True
 
-def check_xampp_status():
-    """Check if XAMPP MySQL is running"""
-    import subprocess
-    
-    print("🔍 Checking XAMPP MySQL status...")
-    
-    # Check if XAMPP MySQL socket exists
-    socket_path = '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
-    if os.path.exists(socket_path):
-        print(f"✅ MySQL socket found: {socket_path}")
-    else:
-        print(f"❌ MySQL socket not found: {socket_path}")
-        print("Please start MySQL in XAMPP Control Panel")
-        return False
-    
-    # Check if port 3306 is listening
-    try:
-        result = subprocess.run(['lsof', '-i', ':3306'], capture_output=True, text=True)
-        if result.stdout:
-            print("✅ MySQL is listening on port 3306")
-        else:
-            print("⚠️  MySQL is not listening on port 3306 (this might be normal for socket connection)")
-    except Exception as e:
-        print(f"⚠️  Could not check port 3306: {e}")
-    
-    return True
-
 if __name__ == "__main__":
-    print("🚀 Setting up Minty Database with XAMPP MySQL...")
-    print("=" * 60)
-    
-    # Check XAMPP status first
-    if not check_xampp_status():
-        print("\n❌ Please start XAMPP MySQL before running this script")
-        print("1. Open XAMPP Control Panel")
-        print("2. Click 'Start' next to MySQL")
-        print("3. Run this script again")
-        exit(1)
+    print("🚀 Setting up Minty Database...")
+    print("=" * 50)
     
     # Create database and tables
     if create_database():
-        # Update existing database with new fields
-        update_existing_database()
-        
         # Ask if user wants to create sample data
         response = input("\nWould you like to create sample data? (y/n): ").lower().strip()
         if response in ['y', 'yes']:
             create_sample_data()
     
     print("\n📝 Next steps:")
-    print("1. Your .env file is already configured for XAMPP")
-    print("2. Install MySQL dependencies: pip install pymysql cryptography")
-    print("3. Run the Flask application: python3 run_app.py")
-    print("4. Test the signup page: http://localhost:5001/register.html") 
+    print("1. Update your .env file with MySQL credentials")
+    print("2. Set DATABASE_TYPE=mysql in your .env file")
+    print("3. Install MySQL dependencies: pip install pymysql cryptography")
+    print("4. Run the Flask application: python app.py") 

@@ -3,7 +3,7 @@ import os
 import requests
 import yfinance as yf
 from datetime import datetime, timedelta
-from model import load_and_train, get_prediction, get_recommendation, Base, User, Order, Profile
+from model import load_and_train, get_prediction, get_recommendation, Base, User, Order, Profile, Portfolio
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -672,61 +672,150 @@ def get_current_user():
 @app.route('/orders', methods=['POST'])
 @jwt_required()
 def create_order():
-    user_id = get_jwt_identity()
-    data = request.get_json()
-    db = next(get_db())
-    
-    # Validate required fields
-    required_fields = ['symbol', 'side', 'qty']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({'error': f'Missing required field: {field}'}), 400
-    
-    # Validate side
-    if data['side'] not in ['buy', 'sell']:
-        return jsonify({'error': 'Side must be either "buy" or "sell"'}), 400
-    
-    # Validate quantity
-    if data['qty'] <= 0:
-        return jsonify({'error': 'Quantity must be greater than 0'}), 400
-    
-    # Execute the paper trade
-    trade_result = execute_paper_trade(
-        symbol=data['symbol'],
-        side=data['side'],
-        qty=data['qty'],
-        price=data.get('price')  # Optional, will use market price if not provided
-    )
-    
-    if not trade_result['success']:
-        return jsonify({'error': f'Trade execution failed: {trade_result["error"]}'}), 400
-    
-    # Store order in database
-    order = Order(
-        user_id=user_id,
-        symbol=data['symbol'],
-        side=data['side'],
-        qty=data['qty'],
-        price=trade_result['filled_price'],
-        status=trade_result['status'],
-        alpaca_order_id=trade_result.get('order_id')
-    )
-    db.add(order)
-    db.commit()
-    db.refresh(order)
-    
-    return jsonify({
-        'id': order.id,
-        'user_id': order.user_id,
-        'symbol': order.symbol,
-        'side': order.side,
-        'qty': order.qty,
-        'price': order.price,
-        'status': order.status,
-        'timestamp': order.timestamp.isoformat(),
-        'alpaca_order_id': order.alpaca_order_id,
-        'trade_result': trade_result
-    }), 201
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        db = next(get_db())
+        
+        # Validate required fields
+        required_fields = ['symbol', 'side', 'qty']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Extract order data
+        symbol = data.get('symbol').upper()
+        side = data.get('side')  # 'buy' or 'sell'
+        qty = int(data.get('qty'))
+        price_raw = data.get('price')
+        price = float(price_raw) if price_raw is not None else 0  # Handle None values properly
+        order_type = data.get('order_type', 'market')
+        
+        # Validate side
+        if side not in ['buy', 'sell']:
+            return jsonify({'error': 'Side must be either "buy" or "sell"'}), 400
+        
+        # Validate quantity
+        if qty <= 0:
+            return jsonify({'error': 'Quantity must be greater than 0'}), 400
+        
+        # Get current user
+        user = db.query(User).filter(User.id == current_user_id).first()
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Get current market price if not provided
+        if price == 0:
+            try:
+                ticker = yf.Ticker(symbol)
+                current_price = ticker.info.get('currentPrice') or ticker.info.get('regularMarketPrice')
+                if not current_price:
+                    hist = ticker.history(period='1d', interval='1m')
+                    if not hist.empty:
+                        current_price = float(hist['Close'][-1])
+                    else:
+                        return jsonify({'error': 'Unable to get current price for symbol'}), 400
+                price = current_price
+            except Exception as e:
+                return jsonify({'error': f'Error getting current price: {str(e)}'}), 400
+        
+        # Calculate order value
+        order_value = qty * price
+        
+        # Check if user has enough balance for buy orders
+        if side == 'buy':
+            if user.balance < order_value:
+                return jsonify({'error': f'Insufficient balance. Required: ${order_value:.2f}, Available: ${user.balance:.2f}'}), 400
+        
+        # Check if user has enough shares for sell orders
+        if side == 'sell':
+            # Get current portfolio position
+            portfolio = db.query(Portfolio).filter(Portfolio.user_id == current_user_id, Portfolio.symbol == symbol).first()
+            if not portfolio or portfolio.quantity < qty:
+                return jsonify({'error': f'Insufficient shares. Required: {qty}, Available: {portfolio.quantity if portfolio else 0}'}), 400
+        
+        # Execute the paper trade
+        trade_result = execute_paper_trade(
+            symbol=symbol,
+            side=side,
+            qty=qty,
+            price=price
+        )
+        
+        if not trade_result['success']:
+            return jsonify({'error': f'Trade execution failed: {trade_result["error"]}'}), 400
+        
+        # Create new order
+        new_order = Order(
+            user_id=current_user_id,
+            symbol=symbol,
+            side=side,
+            qty=qty,
+            price=price,
+            status='filled',  # For paper trading, assume immediate fill
+            alpaca_order_id=trade_result.get('order_id')
+        )
+        
+        # Save order to database
+        db.add(new_order)
+        
+        # Update user balance
+        if side == 'buy':
+            user.balance -= order_value
+        else:  # sell
+            user.balance += order_value
+        
+        # Update portfolio
+        portfolio = db.query(Portfolio).filter(Portfolio.user_id == current_user_id, Portfolio.symbol == symbol).first()
+        
+        if side == 'buy':
+            if portfolio:
+                # Update existing position
+                total_cost = portfolio.quantity * portfolio.avg_price + order_value
+                portfolio.quantity += qty
+                portfolio.avg_price = total_cost / portfolio.quantity
+                portfolio.updated_at = datetime.utcnow()
+            else:
+                # Create new position
+                portfolio = Portfolio(
+                    user_id=current_user_id,
+                    symbol=symbol,
+                    quantity=qty,
+                    avg_price=price
+                )
+                db.add(portfolio)
+        else:  # sell
+            if portfolio:
+                portfolio.quantity -= qty
+                if portfolio.quantity <= 0:
+                    db.delete(portfolio)
+                else:
+                    portfolio.updated_at = datetime.utcnow()
+        
+        # Commit all changes
+        db.commit()
+        
+        return jsonify({
+            'message': 'Order placed successfully',
+            'order_id': new_order.id,
+            'symbol': symbol,
+            'side': side,
+            'quantity': qty,
+            'price': price,
+            'total_value': order_value,
+            'status': 'filled',
+            'executed_at': datetime.utcnow().isoformat(),
+            'new_balance': user.balance
+        }), 201
+        
+    except Exception as e:
+        print(f"=== ORDER ERROR ===")
+        print(f"Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        print(f"==================")
+        db.rollback()
+        return jsonify({'error': f'Order placement failed: {str(e)}'}), 500
 
 @app.route('/orders', methods=['GET'])
 @jwt_required()
@@ -855,4 +944,4 @@ def update_profile():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(host='0.0.0.0', port=5001, debug=True)

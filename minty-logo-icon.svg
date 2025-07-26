@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#FFFFFF"/>
+  <!-- Leaf symbol (stylized as a rising chart) -->
+  <polyline points="14,48 22,32 30,38 38,22 46,34" fill="none" stroke="#4CAF90" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="46" cy="34" rx="6" ry="11" fill="#4CAF90" transform="rotate(-20 46 34)"/>
+</svg> 
