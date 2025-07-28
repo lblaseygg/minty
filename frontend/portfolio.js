@@ -33,7 +33,12 @@ function getChangeClass(value) {
 // API functions
 async function fetchAccountInfo() {
     try {
-        const response = await fetch('http://localhost:5001/account');
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5001/account', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         if (!response.ok) throw new Error('Failed to fetch account info');
         return await response.json();
     } catch (error) {
@@ -44,7 +49,12 @@ async function fetchAccountInfo() {
 
 async function fetchPortfolio() {
     try {
-        const response = await fetch('http://localhost:5001/portfolio');
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5001/portfolio', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         if (!response.ok) throw new Error('Failed to fetch portfolio');
         return await response.json();
     } catch (error) {
@@ -55,7 +65,12 @@ async function fetchPortfolio() {
 
 async function fetchOrders() {
     try {
-        const response = await fetch('http://localhost:5001/orders');
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5001/orders', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         if (!response.ok) throw new Error('Failed to fetch orders');
         return await response.json();
     } catch (error) {
@@ -139,35 +154,22 @@ function updateHoldingsList(portfolioData, livePrices) {
         const currentPrice = livePrices[position.symbol] || position.current_price || position.avg_entry_price;
         const marketValue = position.qty * currentPrice;
         const costBasis = position.qty * position.avg_entry_price;
-        const unrealizedPnL = marketValue - costBasis;
-        const unrealizedPnLPercent = costBasis > 0 ? (unrealizedPnL / costBasis) * 100 : 0;
+        const totalReturn = marketValue - costBasis;
+        const totalReturnPercent = costBasis > 0 ? (totalReturn / costBasis) * 100 : 0;
 
         const holdingElement = document.createElement('div');
         holdingElement.className = 'holding-item';
         holdingElement.innerHTML = `
-            <div class="holding-header">
-                <div class="holding-symbol">
-                    <strong>${position.symbol}</strong>
-                    <span>${STOCKS[position.symbol] || position.symbol}</span>
-                </div>
-                <div class="holding-price">
-                    <strong>$${currentPrice.toFixed(2)}</strong>
-                    <span class="${getChangeClass(unrealizedPnLPercent)}">${formatPercentage(unrealizedPnLPercent)}</span>
-                </div>
+            <div class="holding-symbol">
+                <strong>${position.symbol}</strong>
+                <span>${STOCKS[position.symbol] || position.symbol}</span>
             </div>
-            <div class="holding-details">
-                <div class="detail">
-                    <span>Shares Owned:</span>
-                    <strong>${position.qty.toFixed(2)}</strong>
-                </div>
-                <div class="detail">
-                    <span>Market Value:</span>
-                    <strong>${formatCurrency(marketValue)}</strong>
-                </div>
-                <div class="detail">
-                    <span>P&L:</span>
-                    <strong class="${getChangeClass(unrealizedPnL)}">${formatCurrency(unrealizedPnL)}</strong>
-                </div>
+            <div class="holding-shares">
+                <span>${position.qty.toFixed(2)} shares</span>
+            </div>
+            <div class="holding-return">
+                <strong class="${getChangeClass(totalReturn)}">${formatCurrency(totalReturn)}</strong>
+                <span class="${getChangeClass(totalReturnPercent)}">${formatPercentage(totalReturnPercent)}</span>
             </div>
         `;
         container.appendChild(holdingElement);

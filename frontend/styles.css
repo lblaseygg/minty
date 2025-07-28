@@ -838,6 +838,112 @@ canvas {
     background-color: #ff3b6a;
 }
 
+/* Portfolio Holdings */
+.holding-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.holding-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.holding-symbol {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.holding-symbol strong {
+    font-size: 18px;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 4px;
+}
+
+.holding-symbol span {
+    font-size: 14px;
+    color: #6e6e73;
+}
+
+.holding-shares {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 20px;
+}
+
+.holding-shares span {
+    font-size: 16px;
+    color: #6e6e73;
+    font-weight: 500;
+}
+
+.holding-return {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.holding-return strong {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.holding-return span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Color classes for returns */
+.holding-return strong.up,
+.holding-return span.up {
+    color: #34c759;
+}
+
+.holding-return strong.down,
+.holding-return span.down {
+    color: #ff3b30;
+}
+
+.holding-return strong.neutral,
+.holding-return span.neutral {
+    color: #6e6e73;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6e6e73;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.empty-state p:last-child {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .container {
