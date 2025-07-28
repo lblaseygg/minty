@@ -3,46 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trade - Minty</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Minty - Trade</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="assets/minty-logo-icon.svg">
 </head>
 <body>
+    <!-- Burger Menu -->
+    <button class="burger-menu" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <img src="assets/minty-logo-icon.svg" alt="Minty Logo" width="40">
+            <h2>Minty</h2>
+        </div>
+        <div class="sidebar-search">
+            <input type="text" id="stock-search" placeholder="Search stocks..." aria-label="Search stocks">
+            <button onclick="searchStock()" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="portfolio.html" class="sidebar-nav-link" aria-label="View Portfolio">
+                <i class="fas fa-chart-pie"></i>
+                <span>Portfolio</span>
+            </a>
+            <a href="profile.html" class="sidebar-nav-link" aria-label="View Profile">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+            <a href="trade.html" class="sidebar-nav-link active" aria-label="Trade">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Trade</span>
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="index.html?symbol=NVDA" class="sidebar-stock-link">
+                <img src="assets/nvidia-logo.svg" alt="NVIDIA Logo" width="20">
+                <span>NVIDIA</span>
+            </a>
+            <a href="index.html?symbol=AMD" class="sidebar-stock-link">
+                <img src="assets/amd-logo.svg" alt="AMD Logo" width="20">
+                <span>AMD</span>
+            </a>
+            <a href="index.html?symbol=AAPL" class="sidebar-stock-link">
+                <img src="assets/apple-logo.svg" alt="Apple Logo" width="20">
+                <span>Apple</span>
+            </a>
+            <a href="index.html?symbol=GOOGL" class="sidebar-stock-link">
+                <img src="assets/google-logo.svg" alt="Google Logo" width="20">
+                <span>Google</span>
+            </a>
+            <a href="index.html?symbol=MSFT" class="sidebar-stock-link">
+                <img src="assets/microsoft-logo.svg" alt="Microsoft Logo" width="20">
+                <span>Microsoft</span>
+            </a>
+            <a href="index.html?symbol=TSLA" class="sidebar-stock-link">
+                <img src="assets/tesla-logo.svg" alt="Tesla Logo" width="20">
+                <span>Tesla</span>
+            </a>
+            <a href="index.html?symbol=META" class="sidebar-stock-link">
+                <img src="assets/meta-logo.svg" alt="Meta Logo" width="20">
+                <span>Meta</span>
+            </a>
+            <a href="index.html?symbol=AMZN" class="sidebar-stock-link">
+                <img src="assets/amazon-logo.svg" alt="Amazon Logo" width="20">
+                <span>Amazon</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="logout()" aria-label="Log out">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Overlay -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" aria-label="Quick actions">
+        <i class="fas fa-plus"></i>
+        <div class="fab-menu">
+            <button onclick="window.location.href='trade.html'" aria-label="Trade"><i class="fas fa-exchange-alt"></i> Trade</button>
+            <button onclick="alert('Add to Watchlist (API required)')" aria-label="Add to watchlist"><i class="fas fa-star"></i> Watchlist</button>
+        </div>
+    </button>
+
     <div class="container">
-        <!-- Header -->
         <header class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <img src="assets/minty-logo-icon.svg" alt="Minty Logo" width="40" height="40">
-                    <h1>Minty</h1>
-                </div>
-                <div class="nav-links">
-                    <a href="index.html" class="nav-link">
-                        <i class="fas fa-chart-line"></i>
-                        Dashboard
-                    </a>
-                    <a href="trade.html" class="nav-link active">
-                        <i class="fas fa-exchange-alt"></i>
-                        Trade
-                    </a>
-                    <a href="profile.html" class="nav-link">
-                        <i class="fas fa-user"></i>
-                        Profile
-                    </a>
-                    <button onclick="logout()" class="logout-btn">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Logout
-                    </button>
-                </div>
+            <div class="logo">
+                <img src="assets/minty-logo-icon.svg" alt="Minty Logo" width="50">
+                <h1>Trade</h1>
             </div>
+            <button class="theme-toggle" aria-label="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
             <div class="trading-container">
                 <!-- Account Summary -->
-                <div class="account-summary">
-                    <h2>Account Summary</h2>
+                <section class="grid-item account-summary">
+                    <h3>Account Summary</h3>
                     <div class="account-stats">
                         <div class="stat-item">
                             <span class="stat-label">Cash</span>
@@ -61,20 +128,18 @@
                             <span class="stat-value" id="equity">$100,000.00</span>
                         </div>
                     </div>
-                </div>
+                </section>
 
                 <!-- Trading Form -->
-                <div class="trading-form">
-                    <h2>Place Order</h2>
+                <section class="grid-item trading-form">
+                    <h3>Place Order</h3>
                     <form id="order-form">
                         <div class="form-group">
                             <label for="symbol">Symbol</label>
                             <select id="symbol" name="symbol" required>
                                 <option value="">Select a stock...</option>
-                                <!-- Stock options will be populated by JavaScript -->
                             </select>
                         </div>
-                        
                         <div class="form-group">
                             <label for="side">Side</label>
                             <select id="side" name="side" required>
@@ -82,36 +147,33 @@
                                 <option value="sell">Sell</option>
                             </select>
                         </div>
-                        
                         <div class="form-group">
                             <label for="qty">Quantity</label>
                             <input type="number" id="qty" name="qty" min="1" step="1" required>
                         </div>
-                        
                         <div class="form-group">
                             <label for="price">Price (Optional - Market Order)</label>
                             <input type="number" id="price" name="price" min="0" step="0.01">
                         </div>
-                        
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn-primary">
                             <i class="fas fa-paper-plane"></i>
                             Place Order
                         </button>
                     </form>
-                </div>
+                </section>
 
                 <!-- Portfolio Positions -->
-                <div class="portfolio-positions">
-                    <h2>Portfolio Positions</h2>
+                <section class="grid-item portfolio-positions">
+                    <h3>Portfolio Positions</h3>
                     <div id="positions-container">
                         <p class="no-positions">No positions yet. Start trading to see your portfolio!</p>
                     </div>
-                </div>
+                </section>
             </div>
 
             <!-- Order History -->
-            <div class="order-history">
-                <h2>Order History</h2>
+            <section class="grid-item order-history">
+                <h3>Order History</h3>
                 <div class="order-filters">
                     <select id="symbol-filter">
                         <option value="">All Symbols</option>
@@ -142,24 +204,21 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="orders-tbody">
-                            <!-- Orders will be populated here -->
-                        </tbody>
+                        <tbody id="orders-tbody"></tbody>
                     </table>
                 </div>
-            </div>
+            </section>
         </main>
     </div>
 
-    <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
         <p>Processing order...</p>
     </div>
 
-    <!-- Success/Error Messages -->
     <div id="message-container" class="message-container"></div>
 
+    <script src="main.js"></script>
     <script src="trade.js"></script>
 </body>
-</html> 
+</html>
