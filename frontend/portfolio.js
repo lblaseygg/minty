@@ -102,14 +102,19 @@ async function fetchOrders() {
 
 async function fetchLivePrices(symbols) {
     try {
+        console.log('Fetching live prices for symbols:', symbols);
         const prices = {};
         for (const symbol of symbols) {
             const response = await fetch(`http://localhost:5001/live_data/${symbol}`);
             if (response.ok) {
                 const data = await response.json();
                 prices[symbol] = data.price || 0;
+                console.log(`Live price for ${symbol}:`, data.price);
+            } else {
+                console.log(`Failed to fetch live price for ${symbol}:`, response.status);
             }
         }
+        console.log('All live prices:', prices);
         return prices;
     } catch (error) {
         console.error('Error fetching live prices:', error);
@@ -530,10 +535,15 @@ function updatePortfolioSummary(accountInfo, portfolioData, livePrices) {
 }
 
 function updateHoldingsList(portfolioData, livePrices) {
+    console.log('=== UPDATE HOLDINGS LIST ===');
+    console.log('Portfolio data:', portfolioData);
+    console.log('Live prices:', livePrices);
+    
     const container = document.getElementById('holdings-container');
     container.innerHTML = '';
 
     if (portfolioData.positions.length === 0) {
+        console.log('No positions found');
         container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-chart-line"></i>
@@ -551,6 +561,21 @@ function updateHoldingsList(portfolioData, livePrices) {
         const totalReturn = marketValue - costBasis;
         const totalReturnPercent = costBasis > 0 ? (totalReturn / costBasis) * 100 : 0;
 
+        console.log(`Position ${position.symbol}:`, {
+            currentPrice,
+            marketValue,
+            costBasis,
+            totalReturn,
+            totalReturnPercent
+        });
+
+        console.log(`Price comparison for ${position.symbol}:`, {
+            entryPrice: position.avg_entry_price,
+            currentPrice: currentPrice,
+            difference: currentPrice - position.avg_entry_price,
+            percentChange: ((currentPrice - position.avg_entry_price) / position.avg_entry_price) * 100
+        });
+
         const holdingElement = document.createElement('div');
         holdingElement.className = 'holding-item';
         holdingElement.innerHTML = `
@@ -563,9 +588,14 @@ function updateHoldingsList(portfolioData, livePrices) {
             </div>
             <div class="holding-return">
                 <strong class="${getChangeClass(totalReturn)}">${formatCurrency(totalReturn)}</strong>
-                <span class="${getChangeClass(totalReturnPercent)}">${formatPercentage(totalReturnPercent)}</span>
+                <span class="${getChangeClass(totalReturnPercent)}" style="font-size: 16px; font-weight: bold;">${formatPercentage(totalReturnPercent)}</span>
             </div>
         `;
+        
+        console.log('Generated HTML:', holdingElement.innerHTML);
+        console.log('Total return:', totalReturn, 'Percentage:', totalReturnPercent);
+        console.log('Formatted percentage:', formatPercentage(totalReturnPercent));
+        
         container.appendChild(holdingElement);
     });
 }
@@ -702,13 +732,27 @@ async function updatePortfolio() {
             orders: orders?.length || 0
         });
 
-        if (!userInfo || !accountInfo || !portfolioData) {
-            console.error('Failed to fetch portfolio data');
+        // Log detailed portfolio data
+        if (portfolioData && portfolioData.positions) {
+            console.log('Portfolio positions:', portfolioData.positions);
+            portfolioData.positions.forEach(pos => {
+                console.log(`Position ${pos.symbol}:`, {
+                    qty: pos.qty,
+                    avg_entry_price: pos.avg_entry_price,
+                    current_price: pos.current_price
+                });
+            });
+        }
+
+        if (!accountInfo || !portfolioData) {
+            console.error('Failed to fetch essential portfolio data');
             return;
         }
 
-        // Update header
-        updatePortfolioHeader(userInfo);
+        // Update header (only if userInfo is available)
+        if (userInfo) {
+            updatePortfolioHeader(userInfo);
+        }
 
         // Get unique symbols for live price fetching
         const symbols = [...new Set(portfolioData.positions.map(pos => pos.symbol))];
@@ -720,6 +764,20 @@ async function updatePortfolio() {
         updatePortfolioSummary(accountInfo, portfolioData, livePrices);
         updateHoldingsList(portfolioData, livePrices);
         updateRecentActivity(orders);
+        
+        console.log('Updated holdings list with data:', {
+            positions: portfolioData.positions.length,
+            livePrices: Object.keys(livePrices).length
+        });
+        
+        console.log('Portfolio data being passed to holdings:', {
+            positions: portfolioData.positions,
+            livePrices: livePrices
+        });
+        
+        console.log('Note: Percentages show 0.00% because current prices match entry prices. Changes will appear when:');
+        console.log('1. Stock prices move (refresh page for updated live prices)');
+        console.log('2. You make new trades at different prices');
         
         // Check if chart elements exist before creating charts
         const totalChartElement = document.getElementById('total-investments-chart');
