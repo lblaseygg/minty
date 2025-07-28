@@ -31,6 +31,22 @@ function getChangeClass(value) {
 }
 
 // API functions
+async function fetchUserInfo() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5001/users/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch user info');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        return null;
+    }
+}
+
 async function fetchAccountInfo() {
     try {
         const token = localStorage.getItem('token');
@@ -97,6 +113,20 @@ async function fetchLivePrices(symbols) {
 }
 
 // Display functions
+function updatePortfolioHeader(userInfo) {
+    const portfolioTitle = document.querySelector('.logo h1');
+    if (userInfo && userInfo.username) {
+        // Capitalize the first letter of the username
+        const username = userInfo.username.charAt(0).toUpperCase() + userInfo.username.slice(1);
+        portfolioTitle.textContent = `${username}'s Portfolio`;
+        // Update page title as well
+        document.title = `Minty - ${username}'s Portfolio`;
+    } else {
+        portfolioTitle.textContent = 'Portfolio';
+        document.title = 'Minty - Portfolio Dashboard';
+    }
+}
+
 function updatePortfolioSummary(accountInfo, portfolioData, livePrices) {
     const totalInvested = portfolioData.positions.reduce((sum, pos) => {
         return sum + (pos.qty * pos.avg_entry_price);
@@ -380,16 +410,20 @@ function refreshActivity() {
 // Main update function
 async function updatePortfolio() {
     try {
-        const [accountInfo, portfolioData, orders] = await Promise.all([
+        const [userInfo, accountInfo, portfolioData, orders] = await Promise.all([
+            fetchUserInfo(),
             fetchAccountInfo(),
             fetchPortfolio(),
             fetchOrders()
         ]);
 
-        if (!accountInfo || !portfolioData) {
+        if (!userInfo || !accountInfo || !portfolioData) {
             console.error('Failed to fetch portfolio data');
             return;
         }
+
+        // Update header
+        updatePortfolioHeader(userInfo);
 
         // Get unique symbols for live price fetching
         const symbols = [...new Set(portfolioData.positions.map(pos => pos.symbol))];
@@ -623,16 +657,20 @@ function initializeTimeframeSelector() {
 // Update the main updatePortfolio function
 async function updatePortfolio() {
     try {
-        const [accountInfo, portfolioData, orders] = await Promise.all([
+        const [userInfo, accountInfo, portfolioData, orders] = await Promise.all([
+            fetchUserInfo(),
             fetchAccountInfo(),
             fetchPortfolio(),
             fetchOrders()
         ]);
 
-        if (!accountInfo || !portfolioData) {
+        if (!userInfo || !accountInfo || !portfolioData) {
             console.error('Failed to fetch portfolio data');
             return;
         }
+
+        // Update header
+        updatePortfolioHeader(userInfo);
 
         // Get unique symbols for live price fetching
         const symbols = [...new Set(portfolioData.positions.map(pos => pos.symbol))];
