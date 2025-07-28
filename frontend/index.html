@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <link rel="icon" type="image/svg+xml" href="assets/minty-logo-icon.svg">
+    <link rel="icon" type="image/png" href="assets/mintylogoicon.png">
 </head>
 <body>
     <!-- Burger Menu -->
@@ -21,7 +21,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-brand">
-            <img src="assets/minty-logo-icon.svg" alt="Minty Logo">
+            <img src="assets/mintylogoicon.png" alt="Minty Logo">
         </div>
         <nav class="sidebar-nav">
             <a href="portfolio.html" class="sidebar-nav-link">
@@ -80,7 +80,7 @@
     <div class="container">
         <header class="header">
             <div class="logo">
-                <img src="assets/minty-logo-icon.svg" alt="Minty Logo" width="60">
+                <img src="assets/mintylogoicon.png" alt="Minty Logo" width="60">
                 <h1> <span id="stock-name">NVIDIA</span></h1>
             </div>
             <div class="live-price">
@@ -114,16 +114,6 @@
                 </div>
             </div>
 
-            <div class="grid-item rsi-chart">
-                <h3>Relative Strength Index (RSI)</h3>
-                <canvas id="rsi-chart"></canvas>
-            </div>
-
-            <div class="grid-item macd-chart">
-                <h3>MACD</h3>
-                <canvas id="macd-chart"></canvas>
-            </div>
-
             <div class="grid-item ai-prediction">
                 <h3>AI Analysis</h3>
                 <div class="recommendation">
@@ -137,6 +127,47 @@
                 <div class="trade-buttons">
                     <button id="buy-btn" class="buy">Buy</button>
                     <button id="sell-btn" class="sell">Sell</button>
+                </div>
+            </div>
+
+            <div class="grid-item indicators-container">
+                <h3>Technical Indicators</h3>
+                <div class="indicators-grid">
+                    <div class="indicator-item rsi-chart">
+                        <h4>Relative Strength Index (RSI)</h4>
+                        <canvas id="rsi-chart"></canvas>
+                    </div>
+                    <div class="indicator-item macd-chart">
+                        <h4>MACD</h4>
+                        <canvas id="macd-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item about-stock">
+                <h3>About <span id="about-stock-name">NVIDIA</span></h3>
+                <div class="about-content">
+                    <p id="about-description">
+                        NVIDIA Corporation is a multinational technology company that designs graphics processing units (GPUs) for the gaming and professional markets, as well as system on a chip units (SoCs) for the mobile computing and automotive market.
+                    </p>
+                    <div class="about-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Sector:</span>
+                            <span id="about-sector">Technology</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Industry:</span>
+                            <span id="about-industry">Semiconductors</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Founded:</span>
+                            <span id="about-founded">1993</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Headquarters:</span>
+                            <span id="about-headquarters">Santa Clara, California</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 

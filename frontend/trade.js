@@ -2,6 +2,27 @@
 let orders = [];
 let accountInfo = {};
 
+// Sidebar functions
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const burgerMenu = document.querySelector('.burger-menu');
+    
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+    burgerMenu.classList.toggle('active');
+}
+
+function searchStock() {
+    const searchInput = document.getElementById('stock-search');
+    const query = searchInput.value.trim().toUpperCase();
+    
+    if (query) {
+        // Navigate to the stock page with the searched symbol
+        window.location.href = `index.html?symbol=${query}`;
+    }
+}
+
 // Check authentication on page load
 document.addEventListener('DOMContentLoaded', function() {
     checkAuth();

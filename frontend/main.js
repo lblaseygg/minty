@@ -2,6 +2,90 @@ let priceChart, rsiChart, macdChart;
 let currentTimeframe = '1Y';
 let lastLabels = { price: [], rsi: [], macd: [] };
 
+// Stock information data
+const STOCK_INFO = {
+    'NVDA': {
+        name: 'NVIDIA',
+        description: 'NVIDIA Corporation is a multinational technology company that designs graphics processing units (GPUs) for the gaming and professional markets, as well as system on a chip units (SoCs) for the mobile computing and automotive market.',
+        sector: 'Technology',
+        industry: 'Semiconductors',
+        founded: '1993',
+        headquarters: 'Santa Clara, California'
+    },
+    'AAPL': {
+        name: 'Apple',
+        description: 'Apple Inc. is an American multinational technology company that specializes in consumer electronics, computer software, and online services. Apple is the world\'s largest technology company by revenue.',
+        sector: 'Technology',
+        industry: 'Consumer Electronics',
+        founded: '1976',
+        headquarters: 'Cupertino, California'
+    },
+    'GOOGL': {
+        name: 'Google',
+        description: 'Alphabet Inc. is an American multinational technology conglomerate holding company. It is the parent company of Google and several former Google subsidiaries.',
+        sector: 'Technology',
+        industry: 'Internet Services',
+        founded: '1998',
+        headquarters: 'Mountain View, California'
+    },
+    'MSFT': {
+        name: 'Microsoft',
+        description: 'Microsoft Corporation is an American multinational technology company which produces computer software, consumer electronics, personal computers, and related services.',
+        sector: 'Technology',
+        industry: 'Software',
+        founded: '1975',
+        headquarters: 'Redmond, Washington'
+    },
+    'TSLA': {
+        name: 'Tesla',
+        description: 'Tesla, Inc. is an American electric vehicle and clean energy company based in Austin, Texas. Tesla designs and manufactures electric cars, battery energy storage, solar panels, and related products and services.',
+        sector: 'Consumer Discretionary',
+        industry: 'Automobiles',
+        founded: '2003',
+        headquarters: 'Austin, Texas'
+    },
+    'META': {
+        name: 'Meta',
+        description: 'Meta Platforms, Inc. is an American multinational technology conglomerate. The company owns Facebook, Instagram, and WhatsApp, among other products and services.',
+        sector: 'Technology',
+        industry: 'Internet Services',
+        founded: '2004',
+        headquarters: 'Menlo Park, California'
+    },
+    'AMZN': {
+        name: 'Amazon',
+        description: 'Amazon.com, Inc. is an American multinational technology company focusing on e-commerce, cloud computing, digital streaming, and artificial intelligence.',
+        sector: 'Consumer Discretionary',
+        industry: 'Internet Retail',
+        founded: '1994',
+        headquarters: 'Seattle, Washington'
+    },
+    'AMD': {
+        name: 'AMD',
+        description: 'Advanced Micro Devices, Inc. is an American multinational semiconductor company that develops computer processors and related technologies for business and consumer markets.',
+        sector: 'Technology',
+        industry: 'Semiconductors',
+        founded: '1969',
+        headquarters: 'Santa Clara, California'
+    }
+};
+
+// Function to update about section
+function updateAboutSection(symbol) {
+    const stockInfo = STOCK_INFO[symbol] || STOCK_INFO['NVDA']; // Default to NVIDIA if not found
+    
+    // Update the about section elements
+    document.getElementById('about-stock-name').textContent = stockInfo.name;
+    document.getElementById('about-description').textContent = stockInfo.description;
+    document.getElementById('about-sector').textContent = stockInfo.sector;
+    document.getElementById('about-industry').textContent = stockInfo.industry;
+    document.getElementById('about-founded').textContent = stockInfo.founded;
+    document.getElementById('about-headquarters').textContent = stockInfo.headquarters;
+    
+    // Also update the stock name in the header
+    document.getElementById('stock-name').textContent = stockInfo.name;
+}
+
 // Utility to get symbol from URL
 function getSelectedSymbol() {
     const params = new URLSearchParams(window.location.search);
@@ -93,9 +177,9 @@ function renderCharts(historical, forceRecreate = false) {
                 {
                     label: '',
                     data: historical.prices,
-                    borderColor: '#76b900',
-                    backgroundColor: 'rgba(118,185,0,0.08)',
-                    borderWidth: 1,
+                    borderColor: '#cce3de',
+                    backgroundColor: 'rgba(204, 227, 222, 0.08)',
+                    borderWidth: 2,
                     fill: true,
                     tension: 0.3,
                     pointRadius: 0
@@ -106,9 +190,21 @@ function renderCharts(historical, forceRecreate = false) {
             responsive: true,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: false },
-                title: { display: false },
+                legend: { 
+                    display: false,
+                    labels: { color: '#ffffff' }
+                },
+                title: { 
+                    display: false,
+                    color: '#ffffff'
+                },
                 tooltip: {
+                    backgroundColor: 'rgba(10, 10, 10, 0.95)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#cce3de',
+                    borderColor: '#cce3de',
+                    borderWidth: 1,
+                    cornerRadius: 8,
                     callbacks: {
                         label: function(context) {
                             return `Price: $${context.parsed.y.toFixed(2)}`;
@@ -119,21 +215,30 @@ function renderCharts(historical, forceRecreate = false) {
             scales: {
                 x: {
                     display: false, // Hide x-axis labels
-                    grid: { color: 'rgba(0,0,0,0.1)' }
+                    grid: { color: 'rgba(204, 227, 222, 0.1)' }
                 },
                 y: {
                     type: 'linear',
                     position: 'left',
-                    title: { display: true, text: 'Price', color: '#000000' },
-                    ticks: { color: '#000000', callback: v => `$${v}` },
-                    grid: { color: 'rgba(0,0,0,0.1)' }
+                    title: { 
+                        display: true, 
+                        text: 'Price', 
+                        color: '#ffffff',
+                        font: { size: 12 }
+                    },
+                    ticks: { 
+                        color: '#ffffff', 
+                        font: { size: 12 },
+                        callback: v => `$${v}` 
+                    },
+                    grid: { color: 'rgba(204, 227, 222, 0.1)' }
                 }
             }
         }
     };
     priceChart = updateOrCreateChart(priceChart, priceCtx, priceConfig, 'price', historical.dates, forceRecreate);
 
-    // RSI Chart (unchanged)
+    // RSI Chart
     const rsiCtx = document.getElementById('rsi-chart').getContext('2d');
     const rsiConfig = {
         type: 'line',
@@ -143,9 +248,9 @@ function renderCharts(historical, forceRecreate = false) {
                 {
                     label: 'RSI',
                     data: historical.rsi,
-                    borderColor: '#4caf50',
-                    backgroundColor: 'rgba(76,175,80,0.08)',
-                    borderWidth: 1,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                    borderWidth: 2,
                     fill: true,
                     tension: 0.3,
                     pointRadius: 0
@@ -155,18 +260,44 @@ function renderCharts(historical, forceRecreate = false) {
         options: {
             responsive: true,
             plugins: {
-                legend: { labels: { color: '#000000' } },
-                title: { display: false }
+                legend: { 
+                    labels: { 
+                        color: '#ffffff',
+                        font: { size: 12 }
+                    } 
+                },
+                title: { 
+                    display: false,
+                    color: '#ffffff'
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(10, 10, 10, 0.95)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#cce3de',
+                    borderColor: '#cce3de',
+                    borderWidth: 1,
+                    cornerRadius: 8
+                }
             },
             scales: {
                 x: {
-                    display: false, // Hide x-axis labels
-                    grid: { color: 'rgba(0,0,0,0.1)' }
+                    display: false,
+                    grid: { color: 'rgba(204, 227, 222, 0.1)' }
                 },
                 y: {
-                    min: 0, max: 100,
-                    ticks: { color: '#000000' },
-                    grid: { color: 'rgba(0,0,0,0.1)' }
+                    type: 'linear',
+                    position: 'left',
+                    title: { 
+                        display: true, 
+                        text: 'RSI', 
+                        color: '#ffffff',
+                        font: { size: 12 }
+                    },
+                    ticks: { 
+                        color: '#ffffff',
+                        font: { size: 12 }
+                    },
+                    grid: { color: 'rgba(204, 227, 222, 0.1)' }
                 }
             }
         }
@@ -221,6 +352,9 @@ function renderCharts(historical, forceRecreate = false) {
 }
 
 async function updateDashboard(tf = currentTimeframe, forceRecreate = false) {
+    // Update about section with current stock
+    updateAboutSection(selectedSymbol);
+    
     // Fetch and update live stats
     const live = await fetchLiveData();
     updateLiveStats(live);
