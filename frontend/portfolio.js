@@ -427,3 +427,28 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Refresh portfolio data every 30 seconds
     setInterval(updatePortfolio, 30000);
 }); 
+
+// Add timeframe selector functionality
+let currentTimeframe = '1M';
+let portfolioHistoryData = {};
+
+// Fetch portfolio historical data 
+async function fetchPortfolioHistory(timeframe = '1M') {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:5001/portfolio_history?timeframe=${timeframe}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) {
+            // If endpoint doesnt exist, generate simulated data
+            return generateSimulatedHistory(timeframe);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching portfolio history:', error);
+        return generateSimulatedHistory(timeframe);
+    }
+}
+
