@@ -245,94 +245,6 @@ function updateRecentActivity(orders) {
     });
 }
 
-function createTotalInvestmentsChart(portfolioData, livePrices, accountInfo) {
-    const ctx = document.getElementById('total-investments-chart').getContext('2d');
-    
-    // Calculate current portfolio value
-    const totalCurrentValue = portfolioData.positions.reduce((sum, pos) => {
-        const currentPrice = livePrices[pos.symbol] || pos.current_price || pos.avg_entry_price;
-        return sum + (pos.qty * currentPrice);
-    }, 0);
-    
-    const cashValue = accountInfo?.cash || 0;
-    const totalPortfolioValue = totalCurrentValue + cashValue;
-    
-    // Create demo data for portfolio growth over time
-    // In a real app, this would come from historical portfolio data
-    const baseValue = Math.max(10000, totalPortfolioValue * 0.8); // Start with a reasonable base
-    const labels = ['1M ago', '2W ago', '1W ago', 'Today'];
-    const values = [
-        baseValue,
-        baseValue * 1.02,
-        baseValue * 0.98,
-        totalPortfolioValue
-    ];
-    
-    if (totalInvestmentsChart) {
-        totalInvestmentsChart.destroy();
-    }
-    
-    totalInvestmentsChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Portfolio Value',
-                data: values,
-                borderColor: '#76b900',
-                backgroundColor: 'rgba(118,185,0,0.1)',
-                fill: true,
-                tension: 0.4,
-                borderWidth: 3,
-                pointBackgroundColor: '#76b900',
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointRadius: 6,
-                pointHoverRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                title: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    titleColor: '#ffffff',
-                    bodyColor: '#ffffff',
-                    borderColor: '#76b900',
-                    borderWidth: 1,
-                    callbacks: {
-                        label: function(context) {
-                            return `Portfolio Value: ${formatCurrency(context.parsed.y)}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { color: '#e0e0e0' }
-                },
-                y: {
-                    grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { 
-                        color: '#e0e0e0',
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
-                        }
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            }
-        }
-    });
-}
-
 function createAllocationChart(portfolioData, livePrices) {
     const ctx = document.getElementById('allocation-chart').getContext('2d');
     
@@ -410,12 +322,21 @@ function refreshActivity() {
 // Main update function
 async function updatePortfolio() {
     try {
+        console.log('Starting portfolio update...');
+        
         const [userInfo, accountInfo, portfolioData, orders] = await Promise.all([
             fetchUserInfo(),
             fetchAccountInfo(),
             fetchPortfolio(),
             fetchOrders()
         ]);
+
+        console.log('Fetched data:', {
+            userInfo: !!userInfo,
+            accountInfo: !!accountInfo,
+            portfolioData: portfolioData?.positions?.length || 0,
+            orders: orders?.length || 0
+        });
 
         if (!userInfo || !accountInfo || !portfolioData) {
             console.error('Failed to fetch portfolio data');
@@ -427,29 +348,70 @@ async function updatePortfolio() {
 
         // Get unique symbols for live price fetching
         const symbols = [...new Set(portfolioData.positions.map(pos => pos.symbol))];
+        console.log('Fetching live prices for symbols:', symbols);
         const livePrices = await fetchLivePrices(symbols);
+        console.log('Live prices:', livePrices);
 
-        // Update all sections
+        // Update summary and holdings (these should always update)
         updatePortfolioSummary(accountInfo, portfolioData, livePrices);
         updateHoldingsList(portfolioData, livePrices);
         updateRecentActivity(orders);
-        createTotalInvestmentsChart(portfolioData, livePrices, accountInfo);
-        createAllocationChart(portfolioData, livePrices);
+        
+        // Check if chart elements exist before creating charts
+        const totalChartElement = document.getElementById('total-investments-chart');
+        const allocationChartElement = document.getElementById('allocation-chart');
+        
+        console.log('Chart elements found:', {
+            totalChart: !!totalChartElement,
+            allocationChart: !!allocationChartElement
+        });
+        
+        // Only update charts if they don't exist and elements are found
+        if (!totalInvestmentsChart && totalChartElement) {
+            console.log('Creating total investments chart...');
+            createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, currentTimeframe);
+        }
+        
+        if (!allocationChart && allocationChartElement) {
+            console.log('Creating allocation chart...');
+            createAllocationChart(portfolioData, livePrices);
+        }
 
+        console.log('Portfolio update completed successfully');
     } catch (error) {
         console.error('Error updating portfolio:', error);
     }
 }
 
-// Initialize portfolio
+// Quick price update function (doesn't refresh charts)
+async function updatePricesOnly() {
+    try {
+        const portfolioData = await fetchPortfolio();
+        if (!portfolioData || portfolioData.positions.length === 0) return;
+        
+        const symbols = [...new Set(portfolioData.positions.map(pos => pos.symbol))];
+        const livePrices = await fetchLivePrices(symbols);
+        
+        // Update only the summary and holdings with new prices
+        const accountInfo = await fetchAccountInfo();
+        updatePortfolioSummary(accountInfo, portfolioData, livePrices);
+        updateHoldingsList(portfolioData, livePrices);
+    } catch (error) {
+        console.error('Error updating prices:', error);
+    }
+}
+
+// Initialize portfolio with timeframe selector
 document.addEventListener('DOMContentLoaded', async function() {
     await updatePortfolio();
+    initializeTimeframeSelector();
     
-    // Refresh portfolio data every 30 seconds
+    // Refresh portfolio data every 30 seconds for real-time updates
     setInterval(updatePortfolio, 30000);
+    
+    // Update prices every 10 seconds for more responsive updates
+    setInterval(updatePricesOnly, 10000);
 }); 
-
-// ... existing code ...
 
 // Add timeframe selector functionality
 let currentTimeframe = '1M';
@@ -579,15 +541,14 @@ function createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, tim
                     label: 'Portfolio Value',
                     data: values,
                     borderColor: '#76b900',
-                    backgroundColor: 'rgba(118,185,0,0.1)',
+                    backgroundColor: 'rgba(118,185,0,0.05)',
                     fill: true,
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointBackgroundColor: '#76b900',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8
+                    tension: 0.2,
+                    borderWidth: 2,
+                    pointBackgroundColor: 'transparent',
+                    pointBorderColor: 'transparent',
+                    pointRadius: 0,
+                    pointHoverRadius: 0
                 }]
             },
             options: {
@@ -597,11 +558,13 @@ function createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, tim
                     legend: { display: false },
                     title: { display: false },
                     tooltip: {
-                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        backgroundColor: 'rgba(0,0,0,0.9)',
                         titleColor: '#ffffff',
                         bodyColor: '#ffffff',
                         borderColor: '#76b900',
                         borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false,
                         callbacks: {
                             label: function(context) {
                                 return `Portfolio Value: ${formatCurrency(context.parsed.y)}`;
@@ -611,22 +574,47 @@ function createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, tim
                 },
                 scales: {
                     x: {
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#e0e0e0' }
+                        grid: { 
+                            color: 'rgba(255,255,255,0.03)',
+                            drawBorder: false
+                        },
+                        ticks: { 
+                            color: '#a0a0a0',
+                            font: {
+                                size: 11
+                            }
+                        },
+                        border: {
+                            display: false
+                        }
                     },
                     y: {
-                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        grid: { 
+                            color: 'rgba(255,255,255,0.03)',
+                            drawBorder: false
+                        },
                         ticks: { 
-                            color: '#e0e0e0',
+                            color: '#a0a0a0',
+                            font: {
+                                size: 11
+                            },
                             callback: function(value) {
                                 return '$' + value.toLocaleString();
                             }
+                        },
+                        border: {
+                            display: false
                         }
                     }
                 },
                 interaction: {
                     intersect: false,
                     mode: 'index'
+                },
+                elements: {
+                    point: {
+                        radius: 0
+                    }
                 }
             }
         });
@@ -693,6 +681,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     await updatePortfolio();
     initializeTimeframeSelector();
     
-    // Refresh portfolio data every 30 seconds
+    // Refresh portfolio data every 30 seconds for real-time updates
     setInterval(updatePortfolio, 30000);
+    
+    // Update prices every 10 seconds for more responsive updates
+    setInterval(updatePricesOnly, 10000);
 });
