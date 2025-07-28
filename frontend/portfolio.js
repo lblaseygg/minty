@@ -137,8 +137,8 @@ async function fetchPortfolioHistory(timeframe = '1M') {
     }
 }
 
-// Generate real portfolio data based on current holdings
-function generateRealPortfolioData(portfolioData, livePrices, accountInfo, timeframe = '1M') {
+// Generate real portfolio data based on actual trades and orders
+function generateRealPortfolioData(portfolioData, livePrices, accountInfo, orders, timeframe = '1M') {
     const now = new Date();
     const data = [];
     
@@ -151,65 +151,143 @@ function generateRealPortfolioData(portfolioData, livePrices, accountInfo, timef
     const cashValue = accountInfo?.cash || 0;
     const currentTotalValue = totalCurrentValue + cashValue;
     
-    // Generate realistic data points based on current portfolio
-    let days, interval;
+    // Get the starting date based on timeframe
+    let startDate;
     switch(timeframe) {
         case '1D':
-            days = 1;
-            interval = 15; // 15-minute intervals
+            startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
             break;
         case '1W':
-            days = 7;
-            interval = 60; // 1-hour intervals
+            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
             break;
         case '1M':
-            days = 30;
-            interval = 1440; // Daily intervals
+            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
             break;
         case '3M':
-            days = 90;
-            interval = 1440; // Daily intervals
+            startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); // 90 days ago
             break;
         case '1Y':
-            days = 365;
-            interval = 1440; // Daily intervals
+            startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000); // 365 days ago
             break;
         default:
-            days = 30;
-            interval = 1440;
+            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
     
-    const totalPoints = Math.floor((days * 24 * 60) / interval);
-    
-    // Start with a realistic base value (80% of current value)
-    let baseValue = currentTotalValue * 0.8;
-    
-    for (let i = 0; i < totalPoints; i++) {
-        const date = new Date(now.getTime() - (totalPoints - i) * interval * 60 * 1000);
-        
-        // Simulate realistic portfolio growth with small volatility
-        const volatility = 0.01; // 1% daily volatility
-        const growth = 0.0002; // 0.02% daily growth on average
-        const randomFactor = (Math.random() - 0.5) * volatility;
-        baseValue *= (1 + growth + randomFactor);
-        
-        data.push({
-            date: date.toISOString(),
-            value: Math.max(0, baseValue)
-        });
-    }
-    
-    // Add current value as the final point
-    data.push({
-        date: now.toISOString(),
-        value: currentTotalValue
+    // Filter orders within the timeframe
+    const relevantOrders = orders.filter(order => {
+        const orderDate = new Date(order.timestamp);
+        return orderDate >= startDate && orderDate <= now;
     });
     
-    return { data };
+    // Sort orders by timestamp
+    relevantOrders.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    // Calculate portfolio value at different points
+    let runningCash = accountInfo?.cash || 0;
+    let runningPositions = {};
+    
+    // Add initial cash (assuming you started with 100k)
+    const initialCash = 100000;
+    runningCash = initialCash;
+    
+    // Create data points based on actual trades
+    const timePoints = [];
+    
+    // Add start point
+    timePoints.push({
+        date: startDate,
+        cash: initialCash,
+        positions: {},
+        totalValue: initialCash
+    });
+    
+    // Process each order to track portfolio changes
+    relevantOrders.forEach(order => {
+        const orderDate = new Date(order.timestamp);
+        
+        if (order.status === 'filled' || order.status === 'accepted') {
+            const orderValue = order.qty * order.price;
+            
+            if (order.side === 'buy') {
+                // Buying stock
+                if (runningCash >= orderValue) {
+                    runningCash -= orderValue;
+                    
+                    if (!runningPositions[order.symbol]) {
+                        runningPositions[order.symbol] = {
+                            qty: 0,
+                            avgPrice: 0,
+                            totalCost: 0
+                        };
+                    }
+                    
+                    const position = runningPositions[order.symbol];
+                    const newTotalCost = position.totalCost + orderValue;
+                    const newQty = position.qty + order.qty;
+                    position.avgPrice = newTotalCost / newQty;
+                    position.qty = newQty;
+                    position.totalCost = newTotalCost;
+                }
+            } else if (order.side === 'sell') {
+                // Selling stock
+                if (runningPositions[order.symbol] && runningPositions[order.symbol].qty >= order.qty) {
+                    const position = runningPositions[order.symbol];
+                    const soldValue = order.qty * order.price;
+                    runningCash += soldValue;
+                    
+                    position.qty -= order.qty;
+                    position.totalCost = position.avgPrice * position.qty;
+                    
+                    if (position.qty <= 0) {
+                        delete runningPositions[order.symbol];
+                    }
+                }
+            }
+            
+            // Calculate current portfolio value at this point
+            let currentPortfolioValue = runningCash;
+            Object.keys(runningPositions).forEach(symbol => {
+                const position = runningPositions[symbol];
+                // Use current live price or order price as fallback
+                const currentPrice = livePrices[symbol] || order.price;
+                currentPortfolioValue += position.qty * currentPrice;
+            });
+            
+            timePoints.push({
+                date: orderDate,
+                cash: runningCash,
+                positions: { ...runningPositions },
+                totalValue: currentPortfolioValue
+            });
+        }
+    });
+    
+    // Add current point
+    timePoints.push({
+        date: now,
+        cash: cashValue,
+        positions: portfolioData.positions.reduce((acc, pos) => {
+            acc[pos.symbol] = {
+                qty: pos.qty,
+                avgPrice: pos.avg_entry_price,
+                totalCost: pos.qty * pos.avg_entry_price
+            };
+            return acc;
+        }, {}),
+        totalValue: currentTotalValue
+    });
+    
+    // Convert to chart data format
+    return {
+        data: timePoints.map(point => ({
+            date: point.date.toISOString(),
+            value: point.totalValue
+        }))
+    };
 }
 
 // Create the total investments chart with timeframe support
-function createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, timeframe = '1M') {
+function createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, orders, timeframe = '1M') {
     const ctx = document.getElementById('total-investments-chart').getContext('2d');
     
     // Calculate current portfolio value
@@ -229,8 +307,9 @@ function createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, tim
             // Use real historical data if available
             chartData = historyData;
         } else {
-            // Generate realistic data based on current portfolio
-            chartData = generateRealPortfolioData(portfolioData, livePrices, accountInfo, timeframe);
+            // Generate realistic data based on actual trades and orders
+            chartData = generateRealPortfolioData(portfolioData, livePrices, accountInfo, orders, timeframe);
+            console.log('Generated real portfolio data:', chartData);
         }
         
         // Check if chart data has actually changed
@@ -378,15 +457,16 @@ function initializeTimeframeSelector() {
                 
                 // Fetch fresh data and update chart
                 try {
-                    const [accountInfo, portfolioData] = await Promise.all([
+                    const [accountInfo, portfolioData, orders] = await Promise.all([
                         fetchAccountInfo(),
-                        fetchPortfolio()
+                        fetchPortfolio(),
+                        fetchOrders()
                     ]);
                     
                     if (accountInfo && portfolioData) {
                         const symbols = [...new Set(portfolioData.positions.map(pos => pos.symbol))];
                         const livePrices = await fetchLivePrices(symbols);
-                        createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, currentTimeframe);
+                        createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, orders, currentTimeframe);
                     }
                 } catch (error) {
                     console.error('Error updating chart timeframe:', error);
@@ -653,7 +733,7 @@ async function updatePortfolio() {
         // Only update charts if they don't exist and elements are found
         if (!totalInvestmentsChart && totalChartElement) {
             console.log('Creating total investments chart...');
-            createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, currentTimeframe);
+            createTotalInvestmentsChart(portfolioData, livePrices, accountInfo, orders, currentTimeframe);
         }
         
         if (!allocationChart && allocationChartElement) {
