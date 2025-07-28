@@ -3,13 +3,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorMessage = document.getElementById('error-message');
     const successMessage = document.getElementById('success-message');
 
-    // Check if user is already logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-        window.location.href = 'index.html';
-        return;
-    }
-
     registerForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -53,17 +46,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Registration successful
                 showMessage('Account created successfully! Redirecting to login...', 'success');
                 
-                // Store the token (optional - you might want to redirect to login instead)
-                localStorage.setItem('token', data.access_token);
-                localStorage.setItem('user', JSON.stringify({
-                    id: data.id,
-                    username: data.username,
-                    email: data.email
-                }));
-                
-                // Redirect to dashboard after a short delay
+                // Redirect to login page after a short delay
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = 'login.html';
                 }, 2000);
                 
             } else {
