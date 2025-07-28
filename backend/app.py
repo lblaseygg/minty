@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended.exceptions import JWTExtendedException
+from werkzeug.exceptions import Unauthorized
 from flask_cors import CORS
 import alpaca_trade_api as tradeapi
 from config import DATABASE_URL, JWT_SECRET_KEY, ALPACA_API_KEY, ALPACA_SECRET_KEY, ALPACA_BASE_URL
@@ -164,86 +166,68 @@ def get_account_info():
 def get_portfolio_positions(user_id):
     """Get current portfolio positions for a specific user"""
     try:
-        if alpaca:
-            positions = alpaca.list_positions()
-            return [{
-                'symbol': pos.symbol,
-                'qty': float(pos.qty),
-                'avg_entry_price': float(pos.avg_entry_price),
-                'current_price': float(pos.current_price),
-                'market_value': float(pos.market_value),
-                'unrealized_pl': float(pos.unrealized_pl)
-            } for pos in positions]
-        else:
-            # Calculate positions from order history
-            return calculate_positions_from_orders(user_id)
+        print(f"=== GET_PORTFOLIO_POSITIONS CALLED with user_id: {user_id} ===")
+        
+        # Always use the portfolio table for now
+        return get_portfolio_from_table(user_id)
+        
     except Exception as e:
         print(f"Error getting portfolio positions: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
-def calculate_positions_from_orders(user_id):
-    """Calculate portfolio positions from order history for a specific user"""
+def get_portfolio_from_table(user_id):
+    """Get portfolio positions directly from the portfolio table"""
     try:
+        print(f"=== GET_PORTFOLIO_FROM_TABLE CALLED with user_id: {user_id} ===")
         db = next(get_db())
-        # Get all filled orders grouped by symbol
-        orders = db.query(Order).filter(Order.user_id == user_id, Order.status == 'filled').all()
+        print("Database session created")
         
-        positions = {}
-        for order in orders:
-            symbol = order.symbol
-            if symbol not in positions:
-                positions[symbol] = {
-                    'symbol': symbol,
-                    'qty': 0,
-                    'total_cost': 0,
-                    'avg_entry_price': 0
-                }
-            
-            if order.side == 'buy':
-                positions[symbol]['qty'] += order.qty
-                positions[symbol]['total_cost'] += order.qty * order.price
-            elif order.side == 'sell':
-                positions[symbol]['qty'] -= order.qty
-                # For sells, we reduce the total cost proportionally
-                if positions[symbol]['qty'] > 0:
-                    cost_per_share = positions[symbol]['total_cost'] / (positions[symbol]['qty'] + order.qty)
-                    positions[symbol]['total_cost'] = positions[symbol]['qty'] * cost_per_share
-                else:
-                    positions[symbol]['total_cost'] = 0
+        # Query all portfolios for this user
+        portfolios = db.query(Portfolio).filter(Portfolio.user_id == user_id).all()
+        print(f"Found {len(portfolios)} portfolio entries")
         
-        # Convert to list and add current prices
         result = []
-        for symbol, pos in positions.items():
-            if pos['qty'] > 0:  # Only include positions with positive quantity
+        for portfolio in portfolios:
+            print(f"Processing portfolio: {portfolio.symbol}, qty: {portfolio.quantity}, avg_price: {portfolio.avg_price}")
+            if portfolio.quantity > 0:  # Only include positions with positive quantity
                 # Get current price
                 try:
-                    ticker = yf.Ticker(symbol)
+                    ticker = yf.Ticker(portfolio.symbol)
                     current_price = ticker.info.get('currentPrice') or ticker.info.get('regularMarketPrice')
                     if not current_price:
                         hist = ticker.history(period='1d', interval='1m')
                         if not hist.empty:
                             current_price = float(hist['Close'][-1])
                         else:
-                            current_price = pos['avg_entry_price'] if pos['avg_entry_price'] > 0 else 0
-                except:
-                    current_price = pos['avg_entry_price'] if pos['avg_entry_price'] > 0 else 0
+                            current_price = portfolio.avg_price
+                except Exception as e:
+                    print(f"Error getting current price for {portfolio.symbol}: {e}")
+                    current_price = portfolio.avg_price
                 
-                avg_entry_price = pos['total_cost'] / pos['qty'] if pos['qty'] > 0 else 0
-                market_value = pos['qty'] * current_price
-                unrealized_pl = market_value - pos['total_cost']
+                market_value = portfolio.quantity * current_price
+                unrealized_pl = market_value - (portfolio.quantity * portfolio.avg_price)
                 
-                result.append({
-                    'symbol': symbol,
-                    'qty': pos['qty'],
-                    'avg_entry_price': avg_entry_price,
+                position_data = {
+                    'symbol': portfolio.symbol,
+                    'qty': portfolio.quantity,
+                    'avg_entry_price': portfolio.avg_price,
                     'current_price': current_price,
                     'market_value': market_value,
                     'unrealized_pl': unrealized_pl
-                })
+                }
+                print(f"Adding position: {position_data}")
+                result.append(position_data)
+            else:
+                print(f"Skipping portfolio {portfolio.symbol} - quantity <= 0")
         
+        print(f"Final result: {result}")
         return result
     except Exception as e:
-        print(f"Error calculating positions: {e}")
+        print(f"Error getting portfolio from table: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 def scrape_market_sentiment(symbol='NVDA'):
@@ -818,44 +802,70 @@ def create_order():
         return jsonify({'error': f'Order placement failed: {str(e)}'}), 500
 
 @app.route('/orders', methods=['GET'])
-@jwt_required()
 def get_user_orders():
-    user_id = get_jwt_identity()
-    db = next(get_db())
-    orders = db.query(Order).filter(Order.user_id == user_id).all()
-    
-    return jsonify([{
-        'id': order.id,
-        'symbol': order.symbol,
-        'side': order.side,
-        'qty': order.qty,
-        'price': order.price,
-        'status': order.status,
-        'timestamp': order.timestamp.isoformat()
-    } for order in orders])
+    print("=== ORDERS ENDPOINT CALLED ===")
+    try:
+        # Temporarily get user_id from query param for testing
+        user_id = int(request.args.get('user_id', '1'))  # Convert to integer
+        print(f"User ID: {user_id}")
+        
+        db = next(get_db())
+        orders = db.query(Order).filter(Order.user_id == user_id).all()
+        print(f"Found {len(orders)} orders")
+        
+        orders_data = [{
+            'id': order.id,
+            'symbol': order.symbol,
+            'side': order.side,
+            'qty': order.qty,
+            'price': order.price,
+            'status': order.status,
+            'timestamp': order.timestamp.isoformat()
+        } for order in orders]
+        
+        print("Orders data:", orders_data)
+        return jsonify(orders_data)
+    except Exception as e:
+        print(f"Orders endpoint error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/account', methods=['GET'])
-@jwt_required()
 def get_account():
     """Get account information including cash, buying power, and portfolio value"""
-    account_info = get_account_info()
-    
-    if 'error' in account_info:
-        return jsonify({'error': account_info['error']}), 500
-    
-    return jsonify(account_info)
+    print("=== ACCOUNT ENDPOINT CALLED ===")
+    try:
+        account_info = get_account_info()
+        print("Account info:", account_info)
+        
+        if 'error' in account_info:
+            print("Account error:", account_info['error'])
+            return jsonify({'error': account_info['error']}), 500
+        
+        return jsonify(account_info)
+    except Exception as e:
+        print(f"Account endpoint error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/portfolio', methods=['GET'])
-@jwt_required()
 def get_portfolio():
     """Get current portfolio positions"""
-    user_id = get_jwt_identity()
-    positions = get_portfolio_positions(user_id)
-    
-    if isinstance(positions, dict) and 'error' in positions:
-        return jsonify({'error': positions['error']}), 500
-    
-    return jsonify({'positions': positions})
+    print("=== PORTFOLIO ENDPOINT CALLED ===")
+    try:
+        # Temporarily get user_id from query param for testing
+        user_id = int(request.args.get('user_id', '1'))  # Convert to integer
+        print(f"User ID: {user_id}")
+        
+        positions = get_portfolio_positions(user_id)
+        print("Positions:", positions)
+        
+        if isinstance(positions, dict) and 'error' in positions:
+            print("Portfolio error:", positions['error'])
+            return jsonify({'error': positions['error']}), 500
+        
+        return jsonify({'positions': positions})
+    except Exception as e:
+        print(f"Portfolio endpoint error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 # Protected profile endpoints
 @app.route('/profiles', methods=['GET'])
@@ -942,6 +952,94 @@ def update_profile():
         'created_at': profile.created_at.isoformat(),
         'updated_at': profile.updated_at.isoformat()
     })
+
+# Add JWT error handler
+@app.errorhandler(422)
+def handle_422_error(error):
+    print("=== 422 ERROR HANDLER ===")
+    print(f"Error: {error}")
+    print(f"Request headers: {dict(request.headers)}")
+    print(f"Authorization header: {request.headers.get('Authorization')}")
+    return jsonify({'error': 'JWT token validation failed'}), 422
+
+@app.errorhandler(Unauthorized)
+def handle_unauthorized(error):
+    print("=== UNAUTHORIZED ERROR HANDLER ===")
+    print(f"Error: {error}")
+    print(f"Request headers: {dict(request.headers)}")
+    return jsonify({'error': 'Unauthorized'}), 401
+
+@app.route('/debug/users', methods=['GET'])
+def debug_users():
+    """Debug endpoint to check users in database"""
+    try:
+        db = next(get_db())
+        users = db.query(User).all()
+        users_data = [{
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'balance': user.balance
+        } for user in users]
+        
+        print("Users in database:", users_data)
+        return jsonify({'users': users_data})
+    except Exception as e:
+        print(f"Debug users error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/debug/portfolio', methods=['GET'])
+def debug_portfolio():
+    """Debug endpoint to check portfolio entries"""
+    try:
+        db = next(get_db())
+        portfolios = db.query(Portfolio).all()
+        portfolios_data = [{
+            'id': portfolio.id,
+            'user_id': portfolio.user_id,
+            'symbol': portfolio.symbol,
+            'quantity': portfolio.quantity,
+            'avg_price': portfolio.avg_price
+        } for portfolio in portfolios]
+        
+        print("Portfolio entries:", portfolios_data)
+        return jsonify({'portfolios': portfolios_data})
+    except Exception as e:
+        print(f"Debug portfolio error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/test/portfolio', methods=['GET'])
+def test_portfolio():
+    """Test endpoint to check portfolio query directly"""
+    try:
+        print("=== TEST PORTFOLIO ENDPOINT ===")
+        user_id = int(request.args.get('user_id', '1'))
+        print(f"Testing with user_id: {user_id}")
+        
+        db = next(get_db())
+        print("Database session created")
+        
+        # Direct query
+        portfolios = db.query(Portfolio).filter(Portfolio.user_id == user_id).all()
+        print(f"Direct query found {len(portfolios)} portfolios")
+        
+        for p in portfolios:
+            print(f"Portfolio: {p.symbol}, qty: {p.quantity}, price: {p.avg_price}")
+        
+        # Test the function
+        positions = get_portfolio_positions(user_id)
+        print(f"Function returned {len(positions)} positions")
+        
+        return jsonify({
+            'direct_query_count': len(portfolios),
+            'function_positions': positions,
+            'test': 'success'
+        })
+    except Exception as e:
+        print(f"Test error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

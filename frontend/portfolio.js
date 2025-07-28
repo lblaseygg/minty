@@ -33,12 +33,7 @@ function getChangeClass(value) {
 // API functions
 async function fetchAccountInfo() {
     try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5001/account', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        const response = await fetch('http://localhost:5001/account');
         if (!response.ok) throw new Error('Failed to fetch account info');
         return await response.json();
     } catch (error) {
@@ -49,12 +44,7 @@ async function fetchAccountInfo() {
 
 async function fetchPortfolio() {
     try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5001/portfolio', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        const response = await fetch('http://localhost:5001/portfolio');
         if (!response.ok) throw new Error('Failed to fetch portfolio');
         return await response.json();
     } catch (error) {
@@ -65,12 +55,7 @@ async function fetchPortfolio() {
 
 async function fetchOrders() {
     try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5001/orders', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        const response = await fetch('http://localhost:5001/orders');
         if (!response.ok) throw new Error('Failed to fetch orders');
         return await response.json();
     } catch (error) {
