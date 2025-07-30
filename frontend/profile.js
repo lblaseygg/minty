@@ -6,12 +6,6 @@ function checkAuth() {
     }
 }
 
-// Logout function
-function logout() {
-    localStorage.removeItem('token');
-    window.location.href = 'login.html';
-}
-
 // Show error message
 function showError(message) {
     const errorDiv = document.getElementById('error-message');

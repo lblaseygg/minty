@@ -36,7 +36,18 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
         if (response.ok) {
             const data = await response.json();
+            
+            // Clear all previous user data before storing new token
+            if (typeof clearUserData === 'function') {
+                clearUserData();
+            } else {
+                // Fallback: just remove the token
+                localStorage.removeItem('token');
+            }
+            
+            // Store the new user's token
             localStorage.setItem('token', data.access_token);
+            
             showSuccess('Login successful!');
             setTimeout(() => {
                 window.location.href = 'index.html';

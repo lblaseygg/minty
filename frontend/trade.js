@@ -48,11 +48,6 @@ function checkAuth() {
     }
 }
 
-function logout() {
-    localStorage.removeItem('token');
-    window.location.href = 'login.html';
-}
-
 // API functions
 async function makeAuthenticatedRequest(url, options = {}) {
     const token = localStorage.getItem('token');

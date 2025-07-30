@@ -110,19 +110,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function showMessage(message, type) {
         const messageElement = type === 'error' ? errorMessage : successMessage;
         messageElement.textContent = message;
-        messageElement.classList.add('show');
+        messageElement.style.display = 'block';
         
         // Auto-hide success messages after 5 seconds
         if (type === 'success') {
             setTimeout(() => {
-                messageElement.classList.remove('show');
+                messageElement.style.display = 'none';
             }, 5000);
         }
     }
     
     function clearMessages() {
-        errorMessage.classList.remove('show');
-        successMessage.classList.remove('show');
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
     }
     
     // Real-time password confirmation validation

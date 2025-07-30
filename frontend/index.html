@@ -194,11 +194,6 @@
             burger.classList.toggle('hidden');
         }
 
-        function logout() {
-            localStorage.removeItem('token');
-            window.location.href = 'login.html';
-        }
-
         // Check if user is logged in
         function checkAuth() {
             const token = localStorage.getItem('token');
@@ -226,8 +221,7 @@
         document.title = `Minty - ${STOCKS[symbol] || symbol} Live Dashboard`;
     </script>
 
-    
-
+    <script src="auth-utils.js"></script>
     <script src="main.js"></script>
 </body>
 </html> 
