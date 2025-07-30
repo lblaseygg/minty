@@ -329,7 +329,9 @@ async function placeOrder(orderData) {
 
         if (response.ok) {
             const result = await response.json();
-            showMessage(`Order placed successfully! Order ID: ${result.id}`, 'success');
+            
+            // Show receipt instead of just a message
+            showReceipt(result, orderData);
             
             // Reset form
             document.getElementById('order-form').reset();
@@ -350,6 +352,65 @@ async function placeOrder(orderData) {
     } finally {
         showLoading(false);
     }
+}
+
+// Receipt functions
+function showReceipt(orderResult, orderData) {
+    const modal = document.getElementById('receipt-modal');
+    const now = new Date();
+    
+    // Update receipt content
+    document.getElementById('receipt-order-id').textContent = orderResult.order_id || orderResult.id || 'N/A';
+    document.getElementById('receipt-date').textContent = now.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    document.getElementById('receipt-symbol').textContent = orderData.symbol;
+    document.getElementById('receipt-side').textContent = orderData.side.toUpperCase();
+    document.getElementById('receipt-qty').textContent = orderData.qty.toLocaleString();
+    
+    // Show actual price if available, otherwise show market price
+    const actualPrice = orderResult.price || orderData.price;
+    document.getElementById('receipt-price').textContent = actualPrice ? formatCurrency(actualPrice) : 'Market Price';
+    
+    // Remove total amount row
+    const totalRow = document.querySelector('.receipt-details .detail-row.total');
+    if (totalRow) {
+        totalRow.style.display = 'none';
+    }
+    
+    // Update status based on order result
+    const statusText = document.getElementById('receipt-status-text');
+    const statusDesc = document.getElementById('receipt-status-desc');
+    const statusIcon = document.querySelector('.status-icon');
+    
+    if (orderResult.status === 'filled' || orderResult.status === 'accepted') {
+        statusText.textContent = 'Order Confirmed';
+        statusDesc.textContent = 'Your order has been successfully placed';
+        statusIcon.className = 'status-icon success';
+        statusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+    } else {
+        statusText.textContent = 'Order Pending';
+        statusDesc.textContent = 'Your order is being processed';
+        statusIcon.className = 'status-icon success';
+        statusIcon.innerHTML = '<i class="fas fa-clock"></i>';
+    }
+    
+    // Show modal
+    modal.classList.add('show');
+}
+
+function closeReceipt() {
+    const modal = document.getElementById('receipt-modal');
+    modal.classList.remove('show');
+}
+
+function viewPortfolio() {
+    closeReceipt();
+    window.location.href = 'portfolio.html';
 }
 
 async function cancelOrder(orderId) {
