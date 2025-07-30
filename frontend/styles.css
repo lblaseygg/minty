@@ -634,8 +634,12 @@ canvas {
 .input-with-icon i {
     position: absolute;
     left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
     color: #cce3de;
     font-size: 18px;
+    z-index: 2;
+    pointer-events: none;
 }
 
 .input-with-icon input,
@@ -650,6 +654,13 @@ canvas {
     backdrop-filter: blur(10px);
     color: #ffffff;
     transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.input-with-icon input::placeholder {
+    color: #666666;
+    opacity: 0.7;
+    padding-left: 20px;
 }
 
 .form-group select {
@@ -1190,83 +1201,78 @@ canvas {
 
 @media (max-width: 480px) {
     h1 {
-        font-size: 28px;
+        font-size: 24px;
     }
-
+    
     h2 {
         font-size: 20px;
     }
-
+    
     h3 {
         font-size: 18px;
     }
-
+    
     .logo img {
-        width: 32px;
+        width: 40px;
     }
-
+    
     .timeframe-selector button {
-        padding: 2px 6px;
-        font-size: 10px;
-        min-height: 20px;
+        padding: 6px 10px;
+        font-size: 11px;
     }
-
+    
     .live-price, .portfolio-summary {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
+        padding: 8px 12px;
     }
-
+    
     #current-price, #total-portfolio-value {
-        font-size: 18px;
+        font-size: 16px;
     }
-
+    
     #price-change, #total-change {
-        font-size: 14px;
+        font-size: 12px;
     }
-
+    
     .grid-item {
         padding: 16px;
     }
-
+    
     .auth-container {
-        margin: 20px auto;
-        padding: 16px;
-        justify-content: flex-start;
-        min-height: auto;
+        padding: 20px;
+        margin: 20px;
     }
-
+    
     .auth-header {
-        margin-bottom: 30px;
+        margin-bottom: 20px;
     }
-
+    
     .auth-header img {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 16px;
+        width: 50px;
+        height: 50px;
     }
-
+    
     .auth-header h1 {
-        font-size: 24px;
+        font-size: 20px;
     }
-
+    
     .auth-header p {
         font-size: 14px;
     }
-
+    
     .auth-form {
-        padding: 30px 20px;
+        gap: 16px;
     }
-
+    
     .input-with-icon input,
-    .form-group select,
-    .form-group textarea {
+    .input-with-icon select,
+    .input-with-icon textarea {
+        padding: 14px 14px 14px 44px;
         font-size: 14px;
-        padding: 8px 8px 8px 32px;
     }
-
+    
     .input-with-icon i {
-        font-size: 14px;
+        font-size: 16px;
+        left: 16px;
     }
 }
 
